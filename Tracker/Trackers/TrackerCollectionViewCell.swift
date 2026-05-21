@@ -13,7 +13,7 @@ protocol TrackerCellDelegate: AnyObject {
 }
 
 final class TrackerCollectionViewCell: UICollectionViewCell {
-    var tracker: Tracker?
+    private var tracker: Tracker?
     
     private lazy var trackerBackgroundView: UIView = {
         let view = UIView()
@@ -125,7 +125,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         plusButton.setImage(image, for: .normal)
     }
     
-    func pluralizeDays(_ count: Int) -> String {
+    private func pluralizeDays(_ count: Int) -> String {
         let remainder10 = count % 10
         let remainder100 = count % 100
         
