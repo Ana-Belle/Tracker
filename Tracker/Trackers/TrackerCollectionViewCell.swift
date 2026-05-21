@@ -6,7 +6,6 @@
 //
 
 import UIKit
-//import Foundation
 
 protocol TrackerCellDelegate: AnyObject {
     func completeTracker(id: UInt, at indexPath: IndexPath)
@@ -20,6 +19,8 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         let view = UIView()
         view.backgroundColor = .colorSelection5
         view.layer.cornerRadius = 16
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor(resource: .border).cgColor
         return view
     }().forAutoLayout
     
@@ -108,7 +109,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         contentView.bringSubviewToFront(plusButton)
     }
     
-    func configure(with tracker: Tracker, isCompletedToday: Bool, indexPath: IndexPath) {
+    func configure(with tracker: Tracker, isCompletedToday: Bool, completedDays: Int, indexPath: IndexPath) {
         self.tracker = tracker
         self.trackerId = tracker.id
         self.isCompletedToday = isCompletedToday
@@ -117,8 +118,8 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         trackerNameLabel.text = tracker.name
         
-        let wordDay = pluralizeDays(0)
-        daysCountLabel.text = "\(wordDay)"
+        let wordDay = pluralizeDays(completedDays)
+        daysCountLabel.text = wordDay
         
         let image = isCompletedToday ? UIImage(resource: .doneButton) : UIImage(resource: .plusButton)
         plusButton.setImage(image, for: .normal)

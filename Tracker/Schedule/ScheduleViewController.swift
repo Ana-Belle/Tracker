@@ -19,6 +19,12 @@ final class ScheduleViewController: UIViewController {
     private let weekDayValues: [WeekDay] = [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
     private var schedule: [Bool] = [false, false, false, false, false, false, false]
     
+    var previouslySelectedDays: [WeekDay] = [] {
+        didSet {
+            updateScheduleFromPreviousSelection()
+        }
+    }
+    
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = "Расписание"
@@ -70,7 +76,6 @@ final class ScheduleViewController: UIViewController {
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             tableView.heightAnchor.constraint(equalToConstant: 525)
-            //tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 16),
         ])
         
         view.addSubview(doneButton)
@@ -80,7 +85,16 @@ final class ScheduleViewController: UIViewController {
             doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             doneButton.heightAnchor.constraint(equalToConstant: 60)
         ])
+    }
+    
+    private func updateScheduleFromPreviousSelection() {
+        schedule = [false, false, false, false, false, false, false]
         
+        for selectedDay in previouslySelectedDays {
+            if let index = weekDayValues.firstIndex(of: selectedDay) {
+                schedule[index] = true
+            }
+        }
     }
     
     @objc private func doneButtonTapped() {
@@ -97,7 +111,6 @@ final class ScheduleViewController: UIViewController {
     
 }
 
-// MARK: - UITableViewDataSource
 extension ScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 7
@@ -121,14 +134,12 @@ extension ScheduleViewController: UITableViewDataSource {
     }
 }
 
-// MARK: - UITableViewDelegate
 extension ScheduleViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
 }
 
-// MARK: - ScheduleTableViewCellDelegate
 extension ScheduleViewController: ScheduleTableViewCellDelegate {
     func switchValueChanged(isOn: Bool, at index: Int) {
         schedule[index] = isOn
