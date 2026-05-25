@@ -151,12 +151,7 @@ final class TrackersViewController: UIViewController {
     }
 
     private func areAllTrackersEmpty() -> Bool {
-        for category in categories {
-            if !category.trackers.isEmpty {
-                return false
-            }
-        }
-        return true
+        categories.allSatisfy { $0.trackers.isEmpty }
     }
 
     private func addNewCategory(_ category: TrackerCategory) {
@@ -260,16 +255,26 @@ extension TrackersViewController: UICollectionViewDataSource {
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! TrackerCollectionViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
+
+        guard let trackerCell = cell as? TrackerCollectionViewCell else {
+            return cell
+        }
 
         let filteredCategories = getFilteredCategories()
+
+        guard indexPath.section < filteredCategories.count,
+              indexPath.row < filteredCategories[indexPath.section].trackers.count else {
+            return cell
+        }
+
         let tracker = filteredCategories[indexPath.section].trackers[indexPath.row]
 
-        cell.delegate = self
+        trackerCell.delegate = self
 
         let isCompletedToday = isTrackerCompletedToday(id: tracker.id)
         let completedDays = getCompletedDaysCount(id: tracker.id)
-        cell.configure(with: tracker, isCompletedToday: isCompletedToday, completedDays: completedDays, indexPath: indexPath)
+        trackerCell.configure(with: tracker, isCompletedToday: isCompletedToday, completedDays: completedDays, indexPath: indexPath)
 
         return cell
     }
@@ -307,7 +312,7 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
         layout collectionViewLayout: UICollectionViewLayout,
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
-        return CGSize(width: collectionView.bounds.width / 2, height: 148)
+        CGSize(width: collectionView.bounds.width / 2, height: 148)
     }
 
     func collectionView(
@@ -315,7 +320,7 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
         layout collectionViewLayout: UICollectionViewLayout,
         referenceSizeForHeaderInSection section: Int
     ) -> CGSize {
-        return CGSize(width: collectionView.bounds.width, height: 40)
+        CGSize(width: collectionView.bounds.width, height: 40)
     }
 
     func collectionView(
@@ -323,7 +328,7 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
         layout collectionViewLayout: UICollectionViewLayout,
         minimumInteritemSpacingForSectionAt section: Int
     ) -> CGFloat {
-        return 0
+        0
     }
 }
 

@@ -38,7 +38,7 @@ final class TabBarController: UITabBarController {
             selectedImage: nil
         )
         
-        self.viewControllers = [trackersNavigationController, statisticsNavigationController]
+        viewControllers = [trackersNavigationController, statisticsNavigationController]
     }
     
 }

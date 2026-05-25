@@ -278,23 +278,19 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
     
     func textField(_ UITextField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         
-        DispatchQueue.main.async { [weak self] in
-            self?.enableCreateButton()
+        DispatchQueue.main.async {
+            self.enableCreateButton()
         }
         
         return true
     }
     
     private func enableCreateButton() {
-        if newTrackerNameField.text?.isEmpty == false && selectedWeekDays.isEmpty == false {
-            createButton.isEnabled = true
-            createButton.backgroundColor = .blackDay
-        } else {
-            createButton.isEnabled = false
-            createButton.backgroundColor = .ypGray
-        }
+        let isEnabled: Bool = newTrackerNameField.text?.isEmpty == false && !selectedWeekDays.isEmpty
+        createButton.isEnabled = isEnabled
+        createButton.backgroundColor = isEnabled ? .blackDay : .ypGray
     }
-    
+
     @objc private func clearTextField() {
         newTrackerNameField.text = ""
     }
