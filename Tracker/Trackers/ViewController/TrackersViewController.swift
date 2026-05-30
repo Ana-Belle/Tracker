@@ -52,14 +52,14 @@ final class TrackersViewController: UIViewController {
         return plugImage
     }()
 
-    private let collectionView: UICollectionView = {
+    private let trackerCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: UICollectionViewFlowLayout()
         )
         collectionView.register(TrackerCollectionViewCell.self, forCellWithReuseIdentifier: "Cell")
         return collectionView
-    }()
+    }().forAutoLayout
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,7 +71,7 @@ final class TrackersViewController: UIViewController {
         if categories.isEmpty || areAllTrackersEmpty() {
             setPlug()
         } else {
-            setupCollectionView()
+            setupTrackerCollectionView()
         }
     }
 
@@ -100,31 +100,30 @@ final class TrackersViewController: UIViewController {
 
     }
 
-    private func setupCollectionView() {
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(collectionView)
+    private func setupTrackerCollectionView() {
+        view.addSubview(trackerCollectionView)
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 200),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 84),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            trackerCollectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 200),
+            trackerCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 84),
+            trackerCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            trackerCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
 
-        collectionView.register(TrackerCollectionViewCell.self, forCellWithReuseIdentifier: "Cell")
+        trackerCollectionView.register(TrackerCollectionViewCell.self, forCellWithReuseIdentifier: "Cell")
 
-        collectionView.register(
-            SectionHeaderView.self,
+        trackerCollectionView.register(
+            TrackerSectionHeaderView.self,
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-            withReuseIdentifier: SectionHeaderView.identifier
+            withReuseIdentifier: TrackerSectionHeaderView.reuseIdentifier
         )
 
-        collectionView.dataSource = self
-        collectionView.delegate = self
+        trackerCollectionView.dataSource = self
+        trackerCollectionView.delegate = self
     }
 
     private func setPlug() {
-        if collectionView.superview != nil {
-            collectionView.removeFromSuperview()
+        if trackerCollectionView.superview != nil {
+            trackerCollectionView.removeFromSuperview()
         }
 
         plugImage.removeFromSuperview()
@@ -221,14 +220,14 @@ final class TrackersViewController: UIViewController {
         let hasTrackers = !filteredCategories.isEmpty && filteredCategories.contains { !$0.trackers.isEmpty }
 
         if hasTrackers {
-            if collectionView.superview == nil {
+            if trackerCollectionView.superview == nil {
                 removePlug()
-                setupCollectionView()
+                setupTrackerCollectionView()
             }
-            collectionView.reloadData()
+            trackerCollectionView.reloadData()
         } else {
-            if collectionView.superview != nil {
-                collectionView.removeFromSuperview()
+            if trackerCollectionView.superview != nil {
+                trackerCollectionView.removeFromSuperview()
             }
             setPlug()
         }
@@ -291,9 +290,9 @@ extension TrackersViewController: UICollectionViewDataSource {
 
         let header = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
-            withReuseIdentifier: SectionHeaderView.identifier,
+            withReuseIdentifier: TrackerSectionHeaderView.reuseIdentifier,
             for: indexPath
-        ) as! SectionHeaderView
+        ) as! TrackerSectionHeaderView
 
         let filteredCategories = getFilteredCategories()
         header.configure(with: filteredCategories[indexPath.section].header)
@@ -352,7 +351,7 @@ extension TrackersViewController: TrackerCellDelegate {
         completedTrackerIds.insert(key)
 
         print("Трекер \(id) выполнен на дату \(datePicker.date)")
-        collectionView.reloadItems(at: [indexPath])
+        trackerCollectionView.reloadItems(at: [indexPath])
     }
 
     func uncompleteTracker(id: UInt, at indexPath: IndexPath) {
@@ -365,7 +364,7 @@ extension TrackersViewController: TrackerCellDelegate {
         completedTrackerIds.remove(key)
 
         print("Трекер \(id) не выполнен на дату \(datePicker.date)")
-        collectionView.reloadItems(at: [indexPath])
+        trackerCollectionView.reloadItems(at: [indexPath])
     }
 }
 
@@ -377,7 +376,7 @@ extension TrackersViewController: NewTrackerViewControllerDelegate {
     func addNewTrackerToCategory(tracker: Tracker, to categoryHeader: String) {
 
         if areAllTrackersEmpty() {
-            setupCollectionView()
+            setupTrackerCollectionView()
             removePlug()
         }
 
@@ -389,7 +388,7 @@ extension TrackersViewController: NewTrackerViewControllerDelegate {
                 trackers: updatedTrackers
             )
             categories[index] = updatedCategory
-            collectionView.reloadData()
+            trackerCollectionView.reloadData()
         }
     }
 }

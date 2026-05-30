@@ -8,8 +8,8 @@
 import UIKit
 
 protocol TrackerCellDelegate: AnyObject {
-    func completeTracker(id: UInt, at indexPath: IndexPath)
-    func uncompleteTracker(id: UInt, at indexPath: IndexPath)
+    func completeTracker(id: UUID, at indexPath: IndexPath)
+    func uncompleteTracker(id: UUID, at indexPath: IndexPath)
 }
 
 final class TrackerCollectionViewCell: UICollectionViewCell {
@@ -17,7 +17,6 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     
     private lazy var trackerBackgroundView: UIView = {
         let view = UIView()
-        view.backgroundColor = .colorSelection5
         view.layer.cornerRadius = 16
         view.layer.borderWidth = 1
         view.layer.borderColor = UIColor(resource: .border).cgColor
@@ -62,7 +61,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     weak var delegate: TrackerCellDelegate?
     
     private var isCompletedToday: Bool = false
-    private var trackerId: UInt?
+    private var trackerId: UUID?
     private var indexPath: IndexPath?
     
     override init(frame: CGRect) {
@@ -114,7 +113,9 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         self.trackerId = tracker.id
         self.isCompletedToday = isCompletedToday
         self.indexPath = indexPath
-        
+
+        trackerBackgroundView.backgroundColor = tracker.color
+
         emojiLabel.text = tracker.emoji
         trackerNameLabel.text = tracker.name
         
@@ -123,6 +124,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         
         let image = isCompletedToday ? UIImage(resource: .doneButton) : UIImage(resource: .plusButton)
         plusButton.setImage(image, for: .normal)
+        plusButton.backgroundColor = tracker.color
     }
     
     private func pluralizeDays(_ count: Int) -> String {

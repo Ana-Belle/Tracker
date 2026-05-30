@@ -1,5 +1,5 @@
 //
-//  SectionHeaderView.swift
+//  TrackerSectionHeaderView.swift
 //  Tracker
 //
 //  Created by Anastasia Belyakova on 10.05.2026.
@@ -7,8 +7,8 @@
 
 import UIKit
 
-final class SectionHeaderView: UICollectionReusableView {
-    static let identifier = "SectionHeaderView"
+final class TrackerSectionHeaderView: UICollectionReusableView {
+    static let reuseIdentifier = "SectionHeaderView"
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
@@ -38,3 +38,4 @@ final class SectionHeaderView: UICollectionReusableView {
         titleLabel.text = title
     }
 }
+
