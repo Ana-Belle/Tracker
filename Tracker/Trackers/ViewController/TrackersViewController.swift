@@ -78,7 +78,7 @@ final class TrackersViewController: UIViewController {
     private func setElements() {
         view.backgroundColor = .whiteDay
 
-        let plusButton = UIBarButtonItem(image: UIImage(resource: .plus), style: .plain, target: self, action: #selector(plusButtonTapped))
+        let plusButton = UIBarButtonItem(image: UIImage(resource: .plusBlack), style: .plain, target: self, action: #selector(plusButtonTapped))
         navigationItem.leftBarButtonItem = plusButton
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: datePicker)
 
@@ -196,7 +196,7 @@ final class TrackersViewController: UIViewController {
         }
     }
 
-    private func createTrackerKey(id: UInt, date: Date) -> String {
+    private func createTrackerKey(id: UUID, date: Date) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: date)
@@ -333,17 +333,17 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
 
 extension TrackersViewController: TrackerCellDelegate {
 
-    private func isTrackerCompletedToday(id: UInt) -> Bool {
+    private func isTrackerCompletedToday(id: UUID) -> Bool {
         let key = createTrackerKey(id: id, date: datePicker.date)
         return completedTrackerIds.contains(key)
     }
 
-    private func getCompletedDaysCount(id: UInt) -> Int {
+    private func getCompletedDaysCount(id: UUID) -> Int {
         let prefix = "\(id)_"
         return completedTrackerIds.filter { $0.hasPrefix(prefix) }.count
     }
 
-    func completeTracker(id: UInt, at indexPath: IndexPath) {
+    func completeTracker(id: UUID, at indexPath: IndexPath) {
         let trackerRecord = TrackerRecord(id: id, date: datePicker.date)
         completedTrackers.append(trackerRecord)
 
@@ -354,7 +354,7 @@ extension TrackersViewController: TrackerCellDelegate {
         trackerCollectionView.reloadItems(at: [indexPath])
     }
 
-    func uncompleteTracker(id: UInt, at indexPath: IndexPath) {
+    func uncompleteTracker(id: UUID, at indexPath: IndexPath) {
         completedTrackers.removeAll { trackerRecord in
             let isSameDay = Calendar.current.isDate(trackerRecord.date, inSameDayAs: datePicker.date)
             return trackerRecord.id == id && isSameDay

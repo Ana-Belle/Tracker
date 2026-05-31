@@ -356,7 +356,7 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
     }
 
     private func enableCreateButton() {
-        let isEnabled: Bool = newTrackerNameField.text?.isEmpty == false && !selectedWeekDays.isEmpty
+        let isEnabled: Bool = newTrackerNameField.text?.isEmpty == false && !selectedWeekDays.isEmpty && selectedEmojiIndex != nil && selectedColorIndex != nil
         createButton.isEnabled = isEnabled
         createButton.backgroundColor = isEnabled ? .blackDay : .ypGray
     }
@@ -523,6 +523,8 @@ extension NewTrackerViewController: UICollectionViewDelegate {
             selectedColorIndex = indexPath.item
             reloadItems(in: collectionView, section: section.rawValue, previousIndex: previousIndex, newIndex: indexPath.item)
         }
+
+        enableCreateButton()
     }
 
     private func reloadItems(
