@@ -48,9 +48,10 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     
     private lazy var plusButton: UIButton = {
         let button = UIButton()
-        let image = UIImage(resource: .plusButton)
+        let image = UIImage(systemName: "plus")
         button.setImage(image, for: .normal)
         button.tintColor = .ypWhite
+        button.backgroundColor = .colorSelection5
         button.layer.cornerRadius = 34/2
         button.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
         button.clipsToBounds = true
@@ -113,18 +114,19 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         self.trackerId = tracker.id
         self.isCompletedToday = isCompletedToday
         self.indexPath = indexPath
-
+        
         trackerBackgroundView.backgroundColor = tracker.color
-
+        
         emojiLabel.text = tracker.emoji
         trackerNameLabel.text = tracker.name
         
         let wordDay = pluralizeDays(completedDays)
         daysCountLabel.text = wordDay
         
-        let image = isCompletedToday ? UIImage(resource: .doneButton) : UIImage(resource: .plusButton)
+        let image = isCompletedToday ? UIImage(systemName: "checkmark") : UIImage(systemName: "plus")
         plusButton.setImage(image, for: .normal)
         plusButton.backgroundColor = tracker.color
+        plusButton.alpha = isCompletedToday ? 0.3 : 1
     }
     
     private func pluralizeDays(_ count: Int) -> String {
