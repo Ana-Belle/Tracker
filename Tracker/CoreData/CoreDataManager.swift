@@ -6,29 +6,36 @@
 //
 
 import CoreData
-import UIKit
 
 final class CoreDataManager {
-    
+
     static let shared = CoreDataManager()
-    
+
     private init() {}
-    
-    var viewContext: NSManagedObjectContext {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            fatalError("AppDelegate is unavailable")
+
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "Tracker")
+        container.loadPersistentStores { _, error in
+            if let error {
+                assertionFailure("Unresolved error \(error)")
+            }
         }
-        return appDelegate.persistentContainer.viewContext
+        return container
+    }()
+
+    var viewContext: NSManagedObjectContext {
+        persistentContainer.viewContext
     }
-    
+
     func saveContext() throws {
         let context = viewContext
         guard context.hasChanges else { return }
-        
+
         do {
             try context.save()
         } catch {
             throw StoreError.saveFailed(error)
         }
     }
+
 }
