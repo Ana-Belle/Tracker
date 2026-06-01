@@ -13,8 +13,8 @@ final class TrackerRecordStore: NSObject {
     
     private let context: NSManagedObjectContext
     private let trackerStore: TrackerStore
-    private var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData>!
-    
+    private var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData>?
+
     init(
         context: NSManagedObjectContext = CoreDataManager.shared.viewContext,
         trackerStore: TrackerStore? = nil
@@ -26,10 +26,12 @@ final class TrackerRecordStore: NSObject {
     }
     
     var records: [TrackerRecord] {
-        (fetchedResultsController.fetchedObjects ?? []).compactMap { $0.toDomain() }
+        guard let fetchedResultsController else { return [] }
+        return (fetchedResultsController.fetchedObjects ?? []).compactMap { $0.toDomain() }
     }
     
     func performFetch() throws {
+        guard let fetchedResultsController else { return }
         try fetchedResultsController.performFetch()
         notifyDelegate()
     }
@@ -82,7 +84,7 @@ final class TrackerRecordStore: NSObject {
     }
     
     private func fetchRecordCoreData(trackerId: UUID, date: Date) -> TrackerRecordCoreData? {
-        fetchedResultsController.fetchedObjects?.first {
+        fetchedResultsController?.fetchedObjects?.first {
             $0.tracker?.id == trackerId
             && Calendar.current.isDate($0.date ?? Date.distantPast, inSameDayAs: date)
         }
@@ -98,8 +100,8 @@ final class TrackerRecordStore: NSObject {
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        fetchedResultsController.delegate = self
-        
+        fetchedResultsController?.delegate = self
+
         do {
             try performFetch()
         } catch {

@@ -12,8 +12,8 @@ final class TrackerCategoryStore: NSObject {
     weak var delegate: TrackerCategoryStoreDelegate?
     
     private let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>!
-    
+    private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>?
+
     init(context: NSManagedObjectContext = CoreDataManager.shared.viewContext) {
         self.context = context
         super.init()
@@ -21,10 +21,12 @@ final class TrackerCategoryStore: NSObject {
     }
     
     var categories: [TrackerCategory] {
-        (fetchedResultsController.fetchedObjects ?? []).map { $0.toDomain() }
+        guard let fetchedResultsController else { return [] }
+        return (fetchedResultsController.fetchedObjects ?? []).map { $0.toDomain() }
     }
     
     func performFetch() throws {
+        guard let fetchedResultsController else { return }
         try fetchedResultsController.performFetch()
         notifyDelegate()
     }
@@ -43,7 +45,8 @@ final class TrackerCategoryStore: NSObject {
     }
     
     func fetchCategoryCoreData(forHeader header: String) -> TrackerCategoryCoreData? {
-        fetchedResultsController.fetchedObjects?.first { $0.header == header }
+        guard let fetchedResultsController else { return nil }
+        return fetchedResultsController.fetchedObjects?.first { $0.header == header }
     }
     
     private func setupFetchedResultsController() {
@@ -56,6 +59,7 @@ final class TrackerCategoryStore: NSObject {
             sectionNameKeyPath: nil,
             cacheName: nil
         )
+        guard let fetchedResultsController else { return }
         fetchedResultsController.delegate = self
         
         do {

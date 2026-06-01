@@ -472,18 +472,22 @@ extension NewTrackerViewController: UICollectionViewDataSource {
         
         switch section {
         case .emoji:
-            let cell = collectionView.dequeueReusableCell(
+            guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: EmojiCollectionViewCell.reuseIdentifier,
                 for: indexPath
-            ) as! EmojiCollectionViewCell
+            ) as? EmojiCollectionViewCell else {
+                return UICollectionViewCell()
+            }
             cell.configure(with: emojis[indexPath.item], isSelected: selectedEmojiIndex == indexPath.item)
             return cell
 
         case .color:
-            let cell = collectionView.dequeueReusableCell(
+            guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: ColorCollectionViewCell.reuseIdentifier,
                 for: indexPath
-            ) as! ColorCollectionViewCell
+            ) as? ColorCollectionViewCell else {
+                return UICollectionViewCell()
+            }
             cell.configure(with: colors[indexPath.item], isSelected: selectedColorIndex == indexPath.item)
             return cell
         }
@@ -494,12 +498,14 @@ extension NewTrackerViewController: UICollectionViewDataSource {
         viewForSupplementaryElementOfKind kind: String,
         at indexPath: IndexPath
     ) -> UICollectionReusableView {
-        let header = collectionView.dequeueReusableSupplementaryView(
+        guard let header = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
             withReuseIdentifier: EmojiColorSectionHeaderView.reuseIdentifier,
             for: indexPath
-        ) as! EmojiColorSectionHeaderView
-        
+        ) as? EmojiColorSectionHeaderView else {
+            return UICollectionReusableView()
+        }
+
         if let section = Section(rawValue: indexPath.section) {
             header.configure(title: section.title)
         }

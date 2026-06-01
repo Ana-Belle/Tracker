@@ -277,12 +277,14 @@ extension TrackersViewController: UICollectionViewDataSource {
             return UICollectionReusableView()
         }
         
-        let header = collectionView.dequeueReusableSupplementaryView(
+        guard let header = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
             withReuseIdentifier: TrackerSectionHeaderView.reuseIdentifier,
             for: indexPath
-        ) as! TrackerSectionHeaderView
-        
+        ) as? TrackerSectionHeaderView else {
+            return UICollectionReusableView()
+        }
+
         let filteredCategories = getFilteredCategories()
         header.configure(with: filteredCategories[indexPath.section].header)
         return header

@@ -13,8 +13,8 @@ final class TrackerStore: NSObject {
     
     private let context: NSManagedObjectContext
     private let categoryStore: TrackerCategoryStore
-    private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>!
-    
+    private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>?
+
     init(
         context: NSManagedObjectContext = CoreDataManager.shared.viewContext,
         categoryStore: TrackerCategoryStore? = nil
@@ -26,16 +26,19 @@ final class TrackerStore: NSObject {
     }
     
     var trackers: [Tracker] {
-        (fetchedResultsController.fetchedObjects ?? []).map { $0.toDomain() }
+        guard let fetchedResultsController else { return [] }
+        return (fetchedResultsController.fetchedObjects ?? []).map { $0.toDomain() }
     }
     
     func performFetch() throws {
+        guard let fetchedResultsController else { return }
         try fetchedResultsController.performFetch()
         notifyDelegate()
     }
     
     func fetchTrackers(forCategoryHeader header: String) -> [Tracker] {
-        (fetchedResultsController.fetchedObjects ?? [])
+        guard let fetchedResultsController else { return [] }
+        return (fetchedResultsController.fetchedObjects ?? [])
             .filter { $0.category?.header == header }
             .sorted { ($0.name ?? "") < ($1.name ?? "") }
             .map { $0.toDomain() }
@@ -74,7 +77,7 @@ final class TrackerStore: NSObject {
     }
     
     func fetchTrackerCoreData(id: UUID) -> TrackerCoreData? {
-        fetchedResultsController.fetchedObjects?.first { $0.id == id }
+        fetchedResultsController?.fetchedObjects?.first { $0.id == id }
     }
     
     private func setupFetchedResultsController() {
@@ -90,7 +93,7 @@ final class TrackerStore: NSObject {
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        fetchedResultsController.delegate = self
+        fetchedResultsController?.delegate = self
         
         do {
             try performFetch()
