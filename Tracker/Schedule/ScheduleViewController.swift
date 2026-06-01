@@ -12,19 +12,21 @@ protocol ScheduleViewControllerDelegate: AnyObject {
 }
 
 final class ScheduleViewController: UIViewController {
-
+    
     weak var delegate: ScheduleViewControllerDelegate?
-
+    
     private let days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     private let weekDayValues: [WeekDay] = [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
     private var schedule: [Bool] = [false, false, false, false, false, false, false]
-
+    
+    private lazy var logger = TrackerLogger.shared
+    
     var previouslySelectedDays: [WeekDay] = [] {
         didSet {
             updateScheduleFromPreviousSelection()
         }
     }
-
+    
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = "Расписание"
@@ -32,7 +34,7 @@ final class ScheduleViewController: UIViewController {
         label.font = .systemFont(ofSize: 16)
         return label
     }().forAutoLayout
-
+    
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.dataSource = self
@@ -44,7 +46,7 @@ final class ScheduleViewController: UIViewController {
         tableView.layer.cornerRadius = 16
         return tableView
     }().forAutoLayout
-
+    
     private lazy var doneButton: UIButton = {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
             self?.doneButtonTapped()
@@ -56,20 +58,20 @@ final class ScheduleViewController: UIViewController {
         button.layer.cornerRadius = 16
         return button
     }().forAutoLayout
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setElements()
     }
-
+    
     private func setElements() {
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),
             headerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
-
+        
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 30),
@@ -77,7 +79,7 @@ final class ScheduleViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             tableView.heightAnchor.constraint(equalToConstant: 525)
         ])
-
+        
         view.addSubview(doneButton)
         NSLayoutConstraint.activate([
             doneButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50),
@@ -86,17 +88,17 @@ final class ScheduleViewController: UIViewController {
             doneButton.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
-
+    
     private func updateScheduleFromPreviousSelection() {
         schedule = [false, false, false, false, false, false, false]
-
+        
         for selectedDay in previouslySelectedDays {
             if let index = weekDayValues.firstIndex(of: selectedDay) {
                 schedule[index] = true
             }
         }
     }
-
+    
     @objc private func doneButtonTapped() {
         var selectedWeekDays: [WeekDay] = []
         for (index, isSelected) in schedule.enumerated() {
@@ -104,18 +106,18 @@ final class ScheduleViewController: UIViewController {
                 selectedWeekDays.append(weekDayValues[index])
             }
         }
-
+        
         delegate?.didSelectSchedule(selectedWeekDays)
         self.dismiss(animated: true, completion: nil)
     }
-
+    
 }
 
 extension ScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         7
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: ScheduleTableViewCell.identifier,
@@ -123,7 +125,7 @@ extension ScheduleViewController: UITableViewDataSource {
         ) as? ScheduleTableViewCell else {
             return UITableViewCell()
         }
-
+        
         cell.configure(
             day: days[indexPath.row],
             isEnabled: schedule[indexPath.row],
@@ -145,6 +147,6 @@ extension ScheduleViewController: UITableViewDelegate {
 extension ScheduleViewController: ScheduleTableViewCellDelegate {
     func switchValueChanged(isOn: Bool, at index: Int) {
         schedule[index] = isOn
-        print("День \(days[index]): \(isOn ? "включен" : "выключен")")
+        logger.info("День \(days[index]): \(isOn ? "включен" : "выключен")")
     }
 }

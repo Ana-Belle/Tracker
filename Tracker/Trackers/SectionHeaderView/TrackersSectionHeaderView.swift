@@ -22,6 +22,7 @@ final class TrackerSectionHeaderView: UICollectionReusableView {
         setupView()
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         nil
     }

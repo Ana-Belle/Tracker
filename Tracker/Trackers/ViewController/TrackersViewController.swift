@@ -15,6 +15,8 @@ final class TrackersViewController: UIViewController {
     private lazy var trackerStore = TrackerStore(categoryStore: categoryStore)
     private lazy var recordStore = TrackerRecordStore(trackerStore: trackerStore)
     
+    private lazy var logger = TrackerLogger.shared
+    
     private lazy var datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
             .forAutoLayout
@@ -218,7 +220,7 @@ final class TrackersViewController: UIViewController {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
         let formattedDate = dateFormatter.string(from: selectedDate)
-        print("Выбранная дата: \(formattedDate)")
+        logger.info("Выбранная дата: \(formattedDate)")
         updateContentVisibility()
     }
     
@@ -284,7 +286,7 @@ extension TrackersViewController: UICollectionViewDataSource {
         ) as? TrackerSectionHeaderView else {
             return UICollectionReusableView()
         }
-
+        
         let filteredCategories = getFilteredCategories()
         header.configure(with: filteredCategories[indexPath.section].header)
         return header
@@ -337,7 +339,7 @@ extension TrackersViewController: TrackerCellDelegate {
             try recordStore.addRecord(trackerId: id, date: datePicker.date)
             trackerCollectionView.reloadItems(at: [indexPath])
         } catch {
-            print("Не удалось сохранить выполнение трекера: \(error)")
+            logger.error("Не удалось сохранить выполнение трекера: \(error)")
         }
     }
     
@@ -346,7 +348,7 @@ extension TrackersViewController: TrackerCellDelegate {
             try recordStore.deleteRecord(trackerId: id, date: datePicker.date)
             trackerCollectionView.reloadItems(at: [indexPath])
         } catch {
-            print("Не удалось удалить выполнение трекера: \(error)")
+            logger.error("Не удалось удалить выполнение трекера: \(error)")
         }
     }
 }
@@ -361,7 +363,7 @@ extension TrackersViewController: NewTrackerViewControllerDelegate {
             try categoryStore.addCategory(header: categoryHeader)
             try trackerStore.addTracker(tracker, toCategoryHeader: categoryHeader)
         } catch {
-            print("Не удалось сохранить трекер: \(error)")
+            logger.error("Не удалось сохранить трекер: \(error)")
         }
     }
 }

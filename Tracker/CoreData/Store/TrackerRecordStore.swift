@@ -14,7 +14,7 @@ final class TrackerRecordStore: NSObject {
     private let context: NSManagedObjectContext
     private let trackerStore: TrackerStore
     private var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData>?
-
+    
     init(
         context: NSManagedObjectContext = CoreDataManager.shared.viewContext,
         trackerStore: TrackerStore? = nil
@@ -101,7 +101,7 @@ final class TrackerRecordStore: NSObject {
             cacheName: nil
         )
         fetchedResultsController?.delegate = self
-
+        
         do {
             try performFetch()
         } catch {

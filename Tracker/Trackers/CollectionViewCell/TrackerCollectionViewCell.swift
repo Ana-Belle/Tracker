@@ -70,6 +70,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         setupView()
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         nil
     }

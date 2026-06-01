@@ -8,11 +8,11 @@
 import CoreData
 
 final class CoreDataManager {
-
+    
     static let shared = CoreDataManager()
-
+    
     private init() {}
-
+    
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Tracker")
         container.loadPersistentStores { _, error in
@@ -22,20 +22,20 @@ final class CoreDataManager {
         }
         return container
     }()
-
+    
     var viewContext: NSManagedObjectContext {
         persistentContainer.viewContext
     }
-
+    
     func saveContext() throws {
         let context = viewContext
         guard context.hasChanges else { return }
-
+        
         do {
             try context.save()
         } catch {
             throw StoreError.saveFailed(error)
         }
     }
-
+    
 }

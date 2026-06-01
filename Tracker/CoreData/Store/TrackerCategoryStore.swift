@@ -13,7 +13,7 @@ final class TrackerCategoryStore: NSObject {
     
     private let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>?
-
+    
     init(context: NSManagedObjectContext = CoreDataManager.shared.viewContext) {
         self.context = context
         super.init()

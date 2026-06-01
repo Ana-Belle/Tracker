@@ -39,7 +39,7 @@ final class ScheduleTableViewCell: UITableViewCell {
     required init?(coder: NSCoder) {
         nil
     }
-
+    
     private func setupView() {
         contentView.addSubview(dayLabel)
         contentView.addSubview(switchControl)

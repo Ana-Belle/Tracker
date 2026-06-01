@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8EA4EC672FCE2B06006270CE /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 8EA4EC662FCE2B06006270CE /* Logging */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		8EF0D2C62FA008A3005606BF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -55,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8EA4EC672FCE2B06006270CE /* Logging in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,10 +80,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8EA4EC652FCE2B06006270CE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		8EF0D2A62FA008A1005606BF = {
 			isa = PBXGroup;
 			children = (
 				8EF0D2B12FA008A1005606BF /* Tracker */,
+				8EA4EC652FCE2B06006270CE /* Frameworks */,
 				8EF0D2B02FA008A1005606BF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -113,6 +126,7 @@
 			);
 			name = Tracker;
 			packageProductDependencies = (
+				8EA4EC662FCE2B06006270CE /* Logging */,
 			);
 			productName = Tracker;
 			productReference = 8EF0D2AF2FA008A1005606BF /* Tracker.app */;
@@ -190,6 +204,9 @@
 			);
 			mainGroup = 8EF0D2A62FA008A1005606BF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8EA4EC622FCE23D9006270CE /* XCRemoteSwiftPackageReference "swift-log" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8EF0D2B02FA008A1005606BF /* Products */;
 			projectDirPath = "";
@@ -581,6 +598,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8EA4EC622FCE23D9006270CE /* XCRemoteSwiftPackageReference "swift-log" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-log";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.13.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8EA4EC662FCE2B06006270CE /* Logging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8EA4EC622FCE23D9006270CE /* XCRemoteSwiftPackageReference "swift-log" */;
+			productName = Logging;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8EF0D2A72FA008A1005606BF /* Project object */;
 }

@@ -20,6 +20,8 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
     private var selectedEmojiIndex: Int?
     private var selectedColorIndex: Int?
     
+    private lazy var logger = TrackerLogger.shared
+    
     private enum Section: Int, CaseIterable {
         case emoji
         case color
@@ -194,9 +196,9 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         )
         return collectionView
     }().forAutoLayout
-
+    
     private var emojiColorCollectionViewHeightConstraint: NSLayoutConstraint?
-
+    
     private lazy var cancelButton: UIButton = {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
             self?.cancelButtonTapped()
@@ -225,11 +227,11 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setElements()
         newTrackerNameField.delegate = self
     }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateEmojiColorCollectionViewHeight()
@@ -279,10 +281,10 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         
         
         scrollView.addSubview(emojiColorCollectionView)
-
+        
         let collectionHeightConstraint = emojiColorCollectionView.heightAnchor.constraint(equalToConstant: 1)
         emojiColorCollectionViewHeightConstraint = collectionHeightConstraint
-
+        
         NSLayoutConstraint.activate([
             emojiColorCollectionView.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 32),
             emojiColorCollectionView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor),
@@ -290,7 +292,7 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             emojiColorCollectionView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -24),
             collectionHeightConstraint
         ])
-
+        
         view.addSubview(cancelButton)
         NSLayoutConstraint.activate([
             cancelButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -354,7 +356,7 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         guard contentHeight > 0 else { return }
         emojiColorCollectionViewHeightConstraint?.constant = contentHeight
     }
-
+    
     private func enableCreateButton() {
         let isEnabled: Bool = newTrackerNameField.text?.isEmpty == false && !selectedWeekDays.isEmpty && selectedEmojiIndex != nil && selectedColorIndex != nil
         createButton.isEnabled = isEnabled
@@ -369,14 +371,14 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             )
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             item.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
-
+            
             let rowHeight: CGFloat = sectionIndex == Section.emoji.rawValue ? 52 : 56
             let rowGroupSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
                 heightDimension: .absolute(rowHeight)
             )
             let rowGroup = NSCollectionLayoutGroup.horizontal(layoutSize: rowGroupSize, subitem: item, count: 6)
-
+            
             let rowsCount = 3
             let sectionGroupHeight = rowHeight * CGFloat(rowsCount) + 8 * CGFloat(rowsCount - 1)
             let sectionGroupSize = NSCollectionLayoutSize(
@@ -388,10 +390,10 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
                 subitem: rowGroup,
                 count: rowsCount
             )
-
+            
             let section = NSCollectionLayoutSection(group: sectionGroup)
             section.interGroupSpacing = 8
-
+            
             let headerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
                 heightDimension: .absolute(44)
@@ -403,7 +405,7 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             )
             section.boundarySupplementaryItems = [header]
             section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 24, trailing: 16)
-
+            
             return section
         }
     }
@@ -443,7 +445,7 @@ extension NewTrackerViewController: ScheduleViewControllerDelegate {
     func didSelectSchedule(_ weekDays: [WeekDay]) {
         self.selectedWeekDays = weekDays
         addSecondLineToButton(scheduleButton, secondLine: formatWeekDays(weekDays))
-        print("Selected days: \(weekDays)")
+        logger.info("Selected days: \(weekDays)")
         enableCreateButton()
     }
     
@@ -480,7 +482,7 @@ extension NewTrackerViewController: UICollectionViewDataSource {
             }
             cell.configure(with: emojis[indexPath.item], isSelected: selectedEmojiIndex == indexPath.item)
             return cell
-
+            
         case .color:
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: ColorCollectionViewCell.reuseIdentifier,
@@ -505,7 +507,7 @@ extension NewTrackerViewController: UICollectionViewDataSource {
         ) as? EmojiColorSectionHeaderView else {
             return UICollectionReusableView()
         }
-
+        
         if let section = Section(rawValue: indexPath.section) {
             header.configure(title: section.title)
         }
@@ -515,10 +517,10 @@ extension NewTrackerViewController: UICollectionViewDataSource {
 }
 
 extension NewTrackerViewController: UICollectionViewDelegate {
-
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let section = Section(rawValue: indexPath.section) else { return }
-
+        
         switch section {
         case .emoji:
             let previousIndex = selectedEmojiIndex
@@ -529,10 +531,10 @@ extension NewTrackerViewController: UICollectionViewDelegate {
             selectedColorIndex = indexPath.item
             reloadItems(in: collectionView, section: section.rawValue, previousIndex: previousIndex, newIndex: indexPath.item)
         }
-
+        
         enableCreateButton()
     }
-
+    
     private func reloadItems(
         in collectionView: UICollectionView,
         section: Int,

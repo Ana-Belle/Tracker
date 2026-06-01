@@ -14,7 +14,7 @@ final class TrackerStore: NSObject {
     private let context: NSManagedObjectContext
     private let categoryStore: TrackerCategoryStore
     private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>?
-
+    
     init(
         context: NSManagedObjectContext = CoreDataManager.shared.viewContext,
         categoryStore: TrackerCategoryStore? = nil
