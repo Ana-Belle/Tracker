@@ -9,11 +9,15 @@ import CoreData
 
 final class TrackerRecordStore: NSObject {
     
+    // MARK: - Properties
+    
     weak var delegate: TrackerRecordStoreDelegate?
     
     private let context: NSManagedObjectContext
     private let trackerStore: TrackerStore
     private var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData>?
+    
+    // MARK: - Initialization
     
     init(
         context: NSManagedObjectContext = CoreDataManager.shared.viewContext,
@@ -25,10 +29,14 @@ final class TrackerRecordStore: NSObject {
         setupFetchedResultsController()
     }
     
+    // MARK: - Public Properties
+    
     var records: [TrackerRecord] {
         guard let fetchedResultsController else { return [] }
         return (fetchedResultsController.fetchedObjects ?? []).compactMap { $0.toDomain() }
     }
+    
+    // MARK: - Public Methods
     
     func performFetch() throws {
         guard let fetchedResultsController else { return }
@@ -83,6 +91,8 @@ final class TrackerRecordStore: NSObject {
         try saveContext()
     }
     
+    // MARK: - Private Methods
+    
     private func fetchRecordCoreData(trackerId: UUID, date: Date) -> TrackerRecordCoreData? {
         fetchedResultsController?.fetchedObjects?.first {
             $0.tracker?.id == trackerId
@@ -127,9 +137,21 @@ final class TrackerRecordStore: NSObject {
     }
 }
 
+// MARK: - NSFetchedResultsControllerDelegate
+
 extension TrackerRecordStore: NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         notifyDelegate()
+    }
+}
+
+// MARK: - Domain Mapping
+
+extension TrackerRecordCoreData {
+    
+    func toDomain() -> TrackerRecord? {
+        guard let trackerId = tracker?.id, let date else { return nil }
+        return TrackerRecord(id: trackerId, date: date)
     }
 }

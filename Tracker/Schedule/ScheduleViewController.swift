@@ -66,6 +66,8 @@ final class ScheduleViewController: UIViewController {
     }
     
     private func setElements() {
+        view.backgroundColor = .whiteDay
+
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),

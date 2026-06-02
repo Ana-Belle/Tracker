@@ -6,14 +6,19 @@
 //
 
 import CoreData
+import UIKit
 
 final class TrackerStore: NSObject {
+    
+    // MARK: - Properties
     
     weak var delegate: TrackerStoreDelegate?
     
     private let context: NSManagedObjectContext
     private let categoryStore: TrackerCategoryStore
     private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>?
+    
+    // MARK: - Initialization
     
     init(
         context: NSManagedObjectContext = CoreDataManager.shared.viewContext,
@@ -25,10 +30,14 @@ final class TrackerStore: NSObject {
         setupFetchedResultsController()
     }
     
+    // MARK: - Public Properties
+    
     var trackers: [Tracker] {
         guard let fetchedResultsController else { return [] }
         return (fetchedResultsController.fetchedObjects ?? []).map { $0.toDomain() }
     }
+    
+    // MARK: - Public Methods
     
     func performFetch() throws {
         guard let fetchedResultsController else { return }
@@ -80,6 +89,8 @@ final class TrackerStore: NSObject {
         fetchedResultsController?.fetchedObjects?.first { $0.id == id }
     }
     
+    // MARK: - Private Methods
+    
     private func setupFetchedResultsController() {
         let request = TrackerCoreData.fetchRequest()
         request.sortDescriptors = [
@@ -116,9 +127,26 @@ final class TrackerStore: NSObject {
     }
 }
 
+// MARK: - NSFetchedResultsControllerDelegate
+
 extension TrackerStore: NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         notifyDelegate()
+    }
+}
+
+// MARK: - Domain Mapping
+
+extension TrackerCoreData {
+    
+    func toDomain() -> Tracker {
+        Tracker(
+            id: id ?? UUID(),
+            name: name ?? "",
+            color: CoreDataValueCodec.decodeColor(color) ?? .clear,
+            emoji: emoji ?? "",
+            schedule: CoreDataValueCodec.decodeSchedule(schedule)
+        )
     }
 }

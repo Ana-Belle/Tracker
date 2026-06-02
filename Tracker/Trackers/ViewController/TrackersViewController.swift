@@ -78,6 +78,7 @@ final class TrackersViewController: UIViewController {
         view.backgroundColor = .whiteDay
         
         let plusButton = UIBarButtonItem(image: UIImage(resource: .plusBlack), style: .plain, target: self, action: #selector(plusButtonTapped))
+        plusButton.tintColor = .blackDay
         navigationItem.leftBarButtonItem = plusButton
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: datePicker)
         
