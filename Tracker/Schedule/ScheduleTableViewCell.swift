@@ -41,6 +41,7 @@ final class ScheduleTableViewCell: UITableViewCell {
     }
     
     private func setupView() {
+        selectionStyle = .none
         contentView.addSubview(dayLabel)
         contentView.addSubview(switchControl)
         
