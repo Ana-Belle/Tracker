@@ -35,14 +35,14 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     private lazy var trackerNameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .ypWhite
-        label.font = .systemFont(ofSize: 12)
+        label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }().forAutoLayout
     
     private lazy var daysCountLabel: UILabel = {
         let label = UILabel()
         label.textColor = .blackDay
-        label.font = .systemFont(ofSize: 12)
+        label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }().forAutoLayout
     

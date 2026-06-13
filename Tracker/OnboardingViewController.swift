@@ -12,11 +12,11 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
     private lazy var pages: [UIViewController] = {
         let pageView1 = UIViewController()
         let backgroundView1 = getBackgroundView(imageResource: .onboarding1)
-        let label1 = getLabel(text: "Отслеживайте только то, что хотите")
+        let label1 = getLabel(text: "Отслеживайте только\nто, что хотите")
         
         let pageView2 = UIViewController()
         let backgroundView2 = getBackgroundView(imageResource: .onboarding2)
-        let label2 = getLabel(text: "Даже если это не литры воды и йога")
+        let label2 = getLabel(text: "Даже если это\nне литры воды и йога")
         
         pageView1.view.addSubview(backgroundView1)
         pageView1.view.addSubview(label1)

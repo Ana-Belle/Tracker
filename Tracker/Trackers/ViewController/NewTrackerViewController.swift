@@ -13,19 +13,20 @@ protocol NewTrackerViewControllerDelegate: AnyObject {
 }
 
 final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
-
+    
     weak var delegate: NewTrackerViewControllerDelegate?
-
+    
     private var selectedWeekDays: [WeekDay] = []
+    private var selectedCategoryHeader: String?
     private var selectedEmojiIndex: Int?
     private var selectedColorIndex: Int?
-
+    
     private lazy var logger = TrackerLogger.shared
-
+    
     private enum Section: Int, CaseIterable {
         case emoji
         case color
-
+        
         var title: String {
             switch self {
             case .emoji: return "Emoji"
@@ -33,33 +34,33 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
-
+    
     private let emojis = [
         "🙂", "😻", "🌺", "🐶", "❤️", "😱",
         "😇", "😡", "🥶", "🤔", "🙌", "🍔",
         "🥦", "🏓", "🥇", "🎸", "🏝", "😪"
     ]
-
+    
     private let colors: [UIColor] = [
         .colorSelection1,  .colorSelection2,  .colorSelection3,  .colorSelection4,  .colorSelection5,  .colorSelection6,
         .colorSelection7,  .colorSelection8,  .colorSelection9,  .colorSelection10, .colorSelection11, .colorSelection12,
         .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
     ]
-
+    
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
         return scrollView
     }().forAutoLayout
-
+    
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = "Новая привычка"
         label.textColor = .blackDay
-        label.font = .systemFont(ofSize: 16)
+        label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
-
+    
     private lazy var newTrackerNameField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название трекера"
@@ -68,20 +69,20 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         textField.backgroundColor = .backgroundDay
         textField.layer.cornerRadius = 16
         textField.clipsToBounds = true
-
+        
         let leftPadding = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftView = leftPadding
         textField.leftViewMode = .always
-
+        
         let rightPaddingContainer = UIView(frame: CGRect(x: 0, y: 0, width: 32, height: 20))
         clearButton.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
         rightPaddingContainer.addSubview(clearButton)
         textField.rightView = rightPaddingContainer
         textField.rightViewMode = .whileEditing
-
+        
         return textField
     }().forAutoLayout
-
+    
     private lazy var clearButton: UIButton = {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(resource: .xmarkCircle), for: .normal)
@@ -89,36 +90,38 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         button.addTarget(self, action: #selector(clearTextField), for: .touchUpInside)
         return button
     }()
-
+    
     private lazy var categoryButton: UIButton = {
-        let button = UIButton(type: .custom)
+        let button = UIButton(primaryAction: UIAction { [weak self] _ in
+            self?.categoryButtonTapped()
+        })
         button.setTitle("Категория", for: .normal)
         button.setTitleColor(.blackDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17)
         button.backgroundColor = .backgroundDay
-
+        
         var config = UIButton.Configuration.plain()
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 50)
         button.configuration = config
         button.contentHorizontalAlignment = .leading
-
+        
         button.layer.cornerRadius = 16
         button.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         button.clipsToBounds = true
-
+        
         let imageView = UIImageView(image: UIImage(resource: .chevron)).forAutoLayout
         button.addSubview(imageView)
-
+        
         NSLayoutConstraint.activate([
             imageView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16),
             imageView.centerYAnchor.constraint(equalTo: button.centerYAnchor),
             imageView.widthAnchor.constraint(equalToConstant: 7),
             imageView.heightAnchor.constraint(equalToConstant: 12)
         ])
-
+        
         return button
     }().forAutoLayout
-
+    
     private lazy var scheduleButton: UIButton = {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
             self?.scheduleButtonTapped()
@@ -127,30 +130,30 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         button.setTitleColor(.blackDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17)
         button.backgroundColor = .backgroundDay
-
+        
         var config = UIButton.Configuration.plain()
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 0)
         button.configuration = config
         button.contentHorizontalAlignment = .leading
-
+        
         button.layer.cornerRadius = 16
         button.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         button.clipsToBounds = true
-
+        
         let imageView = UIImageView(image: UIImage(resource: .chevron)).forAutoLayout
         button.addSubview(imageView)
-
+        
         NSLayoutConstraint.activate([
             imageView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16),
             imageView.centerYAnchor.constraint(equalTo: button.centerYAnchor),
             imageView.widthAnchor.constraint(equalToConstant: 7),
             imageView.heightAnchor.constraint(equalToConstant: 12)
         ])
-
+        
         return button
     }().forAutoLayout
-
-
+    
+    
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [
             categoryButton,
@@ -162,25 +165,25 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         stackView.clipsToBounds = true
         return stackView
     }().forAutoLayout
-
+    
     private lazy var separator: UIView = {
         let container = UIView()
         container.backgroundColor = .backgroundDay
-
+        
         let view = UIView().forAutoLayout
         view.backgroundColor = UIColor(white: 0.85, alpha: 1)
         container.addSubview(view)
-
+        
         NSLayoutConstraint.activate([
             view.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
             view.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
             view.heightAnchor.constraint(equalToConstant: 0.5),
             container.heightAnchor.constraint(equalToConstant: 1)
         ])
-
+        
         return container
     }()
-
+    
     private lazy var emojiColorCollectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeLayout())
         collectionView.backgroundColor = .clear
@@ -196,9 +199,9 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         )
         return collectionView
     }().forAutoLayout
-
+    
     private var emojiColorCollectionViewHeightConstraint: NSLayoutConstraint?
-
+    
     private lazy var cancelButton: UIButton = {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
             self?.cancelButtonTapped()
@@ -211,7 +214,7 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         button.layer.borderWidth = 1
         return button
     }().forAutoLayout
-
+    
     private lazy var createButton: UIButton = {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
             self?.createButtonTapped()
@@ -224,28 +227,28 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
         button.isEnabled = false
         return button
     }().forAutoLayout
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setElements()
         newTrackerNameField.delegate = self
     }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateEmojiColorCollectionViewHeight()
     }
-
+    
     private func setElements() {
         view.backgroundColor = .whiteDay
-
+        
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),
             headerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
-
+        
         view.addSubview(scrollView)
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 24),
@@ -253,7 +256,7 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
-
+        
         scrollView.addSubview(newTrackerNameField)
         NSLayoutConstraint.activate([
             newTrackerNameField.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 24),
@@ -261,30 +264,30 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             newTrackerNameField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             newTrackerNameField.heightAnchor.constraint(equalToConstant: 75)
         ])
-
+        
         scrollView.addSubview(stackView)
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: newTrackerNameField.bottomAnchor, constant: 24),
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
-
+        
         NSLayoutConstraint.activate([
             categoryButton.heightAnchor.constraint(equalToConstant: 75)
         ])
-
-        addSecondLineToButton(categoryButton, buttonTitle: "Категория", secondLine: "Домашний уют")
-
+        
+        updateCategoryButtonTitle()
+        
         NSLayoutConstraint.activate([
             scheduleButton.heightAnchor.constraint(equalToConstant: 75)
         ])
-
-
+        
+        
         scrollView.addSubview(emojiColorCollectionView)
-
+        
         let collectionHeightConstraint = emojiColorCollectionView.heightAnchor.constraint(equalToConstant: 1)
         emojiColorCollectionViewHeightConstraint = collectionHeightConstraint
-
+        
         NSLayoutConstraint.activate([
             emojiColorCollectionView.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 32),
             emojiColorCollectionView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor),
@@ -292,7 +295,7 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             emojiColorCollectionView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -24),
             collectionHeightConstraint
         ])
-
+        
         view.addSubview(cancelButton)
         NSLayoutConstraint.activate([
             cancelButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -300,7 +303,7 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             cancelButton.widthAnchor.constraint(equalToConstant: (view.frame.width-40-8)/2),
             cancelButton.heightAnchor.constraint(equalToConstant: 60),
         ])
-
+        
         view.addSubview(createButton)
         NSLayoutConstraint.activate([
             createButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -309,10 +312,10 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             createButton.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
-
+    
     private func addSecondLineToButton(_ button: UIButton, buttonTitle: String, secondLine: String) {
         let attributedString = NSMutableAttributedString()
-
+        
         let first = NSAttributedString(
             string: buttonTitle,
             attributes: [
@@ -320,48 +323,63 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
                 .font: UIFont.systemFont(ofSize: 17)
             ]
         )
-
-        let newline = NSAttributedString(string: "\n")
-
-        let second = NSAttributedString(
-            string: secondLine,
-            attributes: [
-                .foregroundColor: UIColor.ypGray,
-                .font: UIFont.systemFont(ofSize: 17)
-            ]
-        )
-
+        
         attributedString.append(first)
-        attributedString.append(newline)
-        attributedString.append(second)
-
+        
+        if !secondLine.isEmpty {
+            let newline = NSAttributedString(string: "\n")
+            let second = NSAttributedString(
+                string: secondLine,
+                attributes: [
+                    .foregroundColor: UIColor.ypGray,
+                    .font: UIFont.systemFont(ofSize: 17)
+                ]
+            )
+            
+            attributedString.append(newline)
+            attributedString.append(second)
+        }
+        
         button.setAttributedTitle(attributedString, for: .normal)
         button.titleLabel?.numberOfLines = 0
         button.titleLabel?.lineBreakMode = .byWordWrapping
     }
-
+    
+    private func updateCategoryButtonTitle() {
+        addSecondLineToButton(
+            categoryButton,
+            buttonTitle: "Категория",
+            secondLine: selectedCategoryHeader ?? ""
+        )
+    }
+    
     func textField(_ UITextField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-
+        
         DispatchQueue.main.async {
             self.enableCreateButton()
         }
-
+        
         return true
     }
-
+    
     private func updateEmojiColorCollectionViewHeight() {
         emojiColorCollectionView.layoutIfNeeded()
         let contentHeight = emojiColorCollectionView.collectionViewLayout.collectionViewContentSize.height
         guard contentHeight > 0 else { return }
         emojiColorCollectionViewHeightConstraint?.constant = contentHeight
     }
-
+    
     private func enableCreateButton() {
-        let isEnabled: Bool = newTrackerNameField.text?.isEmpty == false && !selectedWeekDays.isEmpty && selectedEmojiIndex != nil && selectedColorIndex != nil
+        let hasCategory = !(selectedCategoryHeader?.isEmpty ?? true)
+        let isEnabled = newTrackerNameField.text?.isEmpty == false
+        && hasCategory
+        && !selectedWeekDays.isEmpty
+        && selectedEmojiIndex != nil
+        && selectedColorIndex != nil
         createButton.isEnabled = isEnabled
         createButton.backgroundColor = isEnabled ? .blackDay : .ypGray
     }
-
+    
     private func makeLayout() -> UICollectionViewLayout {
         UICollectionViewCompositionalLayout { sectionIndex, _ in
             let itemSize = NSCollectionLayoutSize(
@@ -370,14 +388,14 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             )
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             item.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
-
+            
             let rowHeight: CGFloat = sectionIndex == Section.emoji.rawValue ? 52 : 56
             let rowGroupSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
                 heightDimension: .absolute(rowHeight)
             )
             let rowGroup = NSCollectionLayoutGroup.horizontal(layoutSize: rowGroupSize, subitem: item, count: 6)
-
+            
             let rowsCount = 3
             let sectionGroupHeight = rowHeight * CGFloat(rowsCount) + 8 * CGFloat(rowsCount - 1)
             let sectionGroupSize = NSCollectionLayoutSize(
@@ -389,10 +407,10 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
                 subitem: rowGroup,
                 count: rowsCount
             )
-
+            
             let section = NSCollectionLayoutSection(group: sectionGroup)
             section.interGroupSpacing = 8
-
+            
             let headerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
                 heightDimension: .absolute(44)
@@ -404,27 +422,36 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             )
             section.boundarySupplementaryItems = [header]
             section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 24, trailing: 16)
-
+            
             return section
         }
     }
-
+    
     @objc private func clearTextField() {
         newTrackerNameField.text = ""
     }
-
+    
+    @objc private func categoryButtonTapped() {
+        let categoryVC = CategoryViewController()
+        categoryVC.delegate = self
+        categoryVC.selectedCategoryHeader = selectedCategoryHeader
+        present(categoryVC, animated: true)
+    }
+    
     @objc private func scheduleButtonTapped() {
         let scheduleVC = ScheduleViewController()
         scheduleVC.delegate = self
         scheduleVC.previouslySelectedDays = selectedWeekDays
         present(scheduleVC, animated: true, completion: nil)
     }
-
+    
     @objc private func cancelButtonTapped() {
         self.dismiss(animated: true, completion: nil)
     }
-
+    
     @objc private func createButtonTapped() {
+        guard let selectedCategoryHeader else { return }
+        
         let id = UUID()
         let newTrackerNameFieldText = newTrackerNameField.text ?? "Новый трекер"
         let newTracker = Tracker(
@@ -434,10 +461,18 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
             emoji: selectedEmojiIndex.map { emojis[$0] } ?? "🌸",
             schedule: selectedWeekDays
         )
-        delegate?.addNewTrackerToCategory(tracker: newTracker, to: "Домашний уют")
+        delegate?.addNewTrackerToCategory(tracker: newTracker, to: selectedCategoryHeader)
         self.dismiss(animated: true, completion: nil)
     }
+    
+}
 
+extension NewTrackerViewController: CategoryViewControllerDelegate {
+    func categoryViewController(_ viewController: CategoryViewController, didSelectCategory header: String) {
+        selectedCategoryHeader = header
+        updateCategoryButtonTitle()
+        enableCreateButton()
+    }
 }
 
 extension NewTrackerViewController: ScheduleViewControllerDelegate {
@@ -447,7 +482,7 @@ extension NewTrackerViewController: ScheduleViewControllerDelegate {
         logger.info("Selected days: \(weekDays)")
         enableCreateButton()
     }
-
+    
     private func formatWeekDays(_ days: [WeekDay]) -> String {
         if days.count == 7 {
             return "Каждый день"
@@ -457,15 +492,15 @@ extension NewTrackerViewController: ScheduleViewControllerDelegate {
 }
 
 extension NewTrackerViewController: UICollectionViewDataSource {
-
+    
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         Section.allCases.count
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         18
     }
-
+    
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
@@ -473,7 +508,7 @@ extension NewTrackerViewController: UICollectionViewDataSource {
         guard let section = Section(rawValue: indexPath.section) else {
             return UICollectionViewCell()
         }
-
+        
         switch section {
         case .emoji:
             guard let cell = collectionView.dequeueReusableCell(
@@ -484,7 +519,7 @@ extension NewTrackerViewController: UICollectionViewDataSource {
             }
             cell.configure(with: emojis[indexPath.item], isSelected: selectedEmojiIndex == indexPath.item)
             return cell
-
+            
         case .color:
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: ColorCollectionViewCell.reuseIdentifier,
@@ -496,7 +531,7 @@ extension NewTrackerViewController: UICollectionViewDataSource {
             return cell
         }
     }
-
+    
     func collectionView(
         _ collectionView: UICollectionView,
         viewForSupplementaryElementOfKind kind: String,
@@ -509,20 +544,20 @@ extension NewTrackerViewController: UICollectionViewDataSource {
         ) as? EmojiColorSectionHeaderView else {
             return UICollectionReusableView()
         }
-
+        
         if let section = Section(rawValue: indexPath.section) {
             header.configure(title: section.title)
         }
-
+        
         return header
     }
 }
 
 extension NewTrackerViewController: UICollectionViewDelegate {
-
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let section = Section(rawValue: indexPath.section) else { return }
-
+        
         switch section {
         case .emoji:
             let previousIndex = selectedEmojiIndex
@@ -533,10 +568,10 @@ extension NewTrackerViewController: UICollectionViewDelegate {
             selectedColorIndex = indexPath.item
             reloadItems(in: collectionView, section: section.rawValue, previousIndex: previousIndex, newIndex: indexPath.item)
         }
-
+        
         enableCreateButton()
     }
-
+    
     private func reloadItems(
         in collectionView: UICollectionView,
         section: Int,

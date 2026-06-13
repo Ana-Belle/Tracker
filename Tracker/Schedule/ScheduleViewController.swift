@@ -31,7 +31,7 @@ final class ScheduleViewController: UIViewController {
         let label = UILabel()
         label.text = "Расписание"
         label.textColor = .blackDay
-        label.font = .systemFont(ofSize: 16)
+        label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
     
@@ -53,7 +53,7 @@ final class ScheduleViewController: UIViewController {
         })
         button.setTitle("Готово", for: .normal)
         button.setTitleColor(.whiteDay, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .blackDay
         button.layer.cornerRadius = 16
         return button
@@ -67,7 +67,7 @@ final class ScheduleViewController: UIViewController {
     
     private func setElements() {
         view.backgroundColor = .whiteDay
-
+        
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),

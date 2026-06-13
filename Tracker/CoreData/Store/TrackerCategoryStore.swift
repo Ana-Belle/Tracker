@@ -57,6 +57,40 @@ final class TrackerCategoryStore: NSObject {
         return fetchedResultsController.fetchedObjects?.first { $0.header == header }
     }
 
+    func updateCategory(oldHeader: String, newHeader: String) throws {
+        let trimmedHeader = newHeader.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHeader.isEmpty else { return }
+        guard trimmedHeader != oldHeader else { return }
+
+        guard let category = fetchCategoryCoreData(forHeader: oldHeader) else {
+            throw StoreError.categoryNotFound
+        }
+
+        if let existingCategory = fetchCategoryCoreData(forHeader: trimmedHeader),
+           existingCategory != category {
+            return
+        }
+
+        category.header = trimmedHeader
+        try saveContext()
+    }
+
+    func deleteCategory(header: String) throws {
+        guard let category = fetchCategoryCoreData(forHeader: header) else {
+            throw StoreError.categoryNotFound
+        }
+
+        let trackers = category.trackers as? Set<TrackerCoreData> ?? []
+        for tracker in trackers {
+            let records = tracker.records as? Set<TrackerRecordCoreData> ?? []
+            records.forEach { context.delete($0) }
+            context.delete(tracker)
+        }
+
+        context.delete(category)
+        try saveContext()
+    }
+
     // MARK: - Private Methods
 
     private func setupFetchedResultsController() {
