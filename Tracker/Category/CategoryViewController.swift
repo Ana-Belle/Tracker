@@ -12,15 +12,11 @@ protocol CategoryViewControllerDelegate: AnyObject {
 }
 
 final class CategoryViewController: UIViewController {
-
+    
     weak var delegate: CategoryViewControllerDelegate?
-
-    var selectedCategoryHeader: String?
-
-    private let categoryStore = TrackerCategoryStore()
-    private lazy var logger = TrackerLogger.shared
-    private var categories: [TrackerCategory] = []
-
+    
+    private let viewModel: CategoryViewModel
+    
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = "Категория"
@@ -28,7 +24,7 @@ final class CategoryViewController: UIViewController {
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
-
+    
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.dataSource = self
@@ -46,10 +42,10 @@ final class CategoryViewController: UIViewController {
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         return tableView
     }().forAutoLayout
-
+    
     private lazy var addButton: UIButton = {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
-            self?.addButtonTapped()
+            self?.viewModel.addButtonTapped()
         })
         button.setTitle("Добавить категорию", for: .normal)
         button.setTitleColor(.whiteDay, for: .normal)
@@ -58,25 +54,25 @@ final class CategoryViewController: UIViewController {
         button.layer.cornerRadius = 16
         return button
     }().forAutoLayout
-
+    
     private lazy var plugImage: UIImageView = {
         let plugImage = UIImageView(image: UIImage(resource: .dizzy))
             .forAutoLayout
         plugImage.contentMode = .scaleAspectFill
         return plugImage
     }()
-
+    
     private lazy var plugLabel: UILabel = {
         let label = UILabel()
             .forAutoLayout
         let font = UIFont.systemFont(ofSize: 12, weight: .medium)
         let lineHeight: CGFloat = 18
-
+        
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.minimumLineHeight = lineHeight
         paragraphStyle.maximumLineHeight = lineHeight
         paragraphStyle.alignment = .center
-
+        
         label.attributedText = NSAttributedString(
             string: "Привычки и события можно\nобъединить по смыслу",
             attributes: [
@@ -89,35 +85,79 @@ final class CategoryViewController: UIViewController {
         label.numberOfLines = 0
         return label
     }()
-
+    
+    init(viewModel: CategoryViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    convenience init(selectedCategoryHeader: String? = nil) {
+        self.init(viewModel: CategoryViewModel(selectedCategoryHeader: selectedCategoryHeader))
+    }
+    
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        nil
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        categoryStore.delegate = self
-        categories = categoryStore.categories
+        
+        bindViewModel()
         setElements()
+        viewModel.viewDidLoad()
     }
-
+    
+    private func bindViewModel() {
+        viewModel.onCategoriesUpdated = { [weak self] in
+            self?.tableView.reloadData()
+        }
+        
+        viewModel.onEmptyStateChanged = { [weak self] isEmpty in
+            self?.updateContentVisibility(isEmpty: isEmpty)
+        }
+        
+        viewModel.onDismiss = { [weak self] in
+            self?.dismiss(animated: true)
+        }
+        
+        viewModel.onCategorySelected = { [weak self] header in
+            guard let self else { return }
+            self.delegate?.categoryViewController(self, didSelectCategory: header)
+        }
+        
+        viewModel.onPresentAddCategory = { [weak self] in
+            let categoryFormVC = CategoryFormViewController()
+            self?.present(categoryFormVC, animated: true)
+        }
+        
+        viewModel.onPresentEditCategory = { [weak self] header in
+            let categoryFormVC = CategoryFormViewController()
+            categoryFormVC.editingCategoryHeader = header
+            categoryFormVC.onCategoryUpdated = { [weak self] oldHeader, newHeader in
+                self?.viewModel.categoryUpdated(oldHeader: oldHeader, newHeader: newHeader)
+            }
+            self?.present(categoryFormVC, animated: true)
+        }
+        
+        viewModel.onShowDeleteConfirmation = { [weak self] header in
+            self?.showDeleteConfirmation(for: header)
+        }
+        
+        viewModel.onError = { message in
+            TrackerLogger.shared.error(message)
+        }
+    }
+    
     private func setElements() {
         view.backgroundColor = .whiteDay
-
+        
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),
             headerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
-
-        if !categories.isEmpty {
-            view.addSubview(tableView)
-            NSLayoutConstraint.activate([
-                tableView.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 38),
-                tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-                tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-                tableView.heightAnchor.constraint(equalToConstant: 525)
-            ]) } else {
-                setPlug()
-            }
-
+        
         view.addSubview(addButton)
         NSLayoutConstraint.activate([
             addButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50),
@@ -126,167 +166,9 @@ final class CategoryViewController: UIViewController {
             addButton.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
-
-    private func setPlug() {
-        view.addSubview(plugImage)
-        NSLayoutConstraint.activate([
-            plugImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            plugImage.topAnchor.constraint(equalTo: view.topAnchor, constant: 346),
-            plugImage.heightAnchor.constraint(equalToConstant: 80),
-            plugImage.widthAnchor.constraint(equalToConstant: 80)
-        ])
-
-        view.addSubview(plugLabel)
-        NSLayoutConstraint.activate([
-            plugLabel.topAnchor.constraint(equalTo: plugImage.bottomAnchor, constant: 8),
-            plugLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        ])
-    }
-
-    @objc private func addButtonTapped() {
-        let newCategoryVC = CategoryFormViewController()
-        present(newCategoryVC, animated: true)
-    }
-
-    private func editCategory(header: String) {
-        let newCategoryVC = CategoryFormViewController()
-        newCategoryVC.editingCategoryHeader = header
-        newCategoryVC.onCategoryUpdated = { [weak self] oldHeader, newHeader in
-            if self?.selectedCategoryHeader == oldHeader {
-                self?.selectedCategoryHeader = newHeader
-            }
-        }
-        present(newCategoryVC, animated: true)
-    }
-
-    private func deleteCategory(header: String) {
-        let actionSheet = UIAlertController(
-            title: nil,
-            message: "Эта категория точно не нужна?",
-            preferredStyle: .actionSheet
-        )
-
-        actionSheet.addAction(UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
-            self?.confirmDeleteCategory(header: header)
-        })
-        actionSheet.addAction(UIAlertAction(title: "Отменить", style: .cancel))
-
-        present(actionSheet, animated: true)
-    }
-
-    private func confirmDeleteCategory(header: String) {
-        do {
-            try categoryStore.deleteCategory(header: header)
-            if selectedCategoryHeader == header {
-                selectedCategoryHeader = nil
-            }
-        } catch {
-            logger.error("Не удалось удалить категорию: \(error)")
-        }
-    }
-}
-
-extension CategoryViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        categories.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: CategoryTableViewCell.identifier,
-            for: indexPath
-        ) as? CategoryTableViewCell else {
-            return UITableViewCell()
-        }
-
-        let category = categories[indexPath.row]
-        cell.configure(
-            header: category.header,
-            isSelected: category.header == selectedCategoryHeader
-        )
-        cell.backgroundColor = .backgroundDay
-
-        return cell
-    }
-}
-
-extension CategoryViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        75
-    }
-
-    func tableView(
-        _ tableView: UITableView,
-        contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point: CGPoint
-    ) -> UIContextMenuConfiguration? {
-        let categoryHeader = categories[indexPath.row].header
-
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
-            let editAction = UIAction(
-                title: "Редактировать",
-                image: nil
-            ) { _ in
-                self?.editCategory(header: categoryHeader)
-            }
-
-            let deleteAction = UIAction(
-                title: "Удалить",
-                image: nil,
-                attributes: .destructive
-            ) { _ in
-                self?.deleteCategory(header: categoryHeader)
-            }
-
-            return UIMenu(children: [editAction, deleteAction])
-        }
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedCategory = categories[indexPath.row]
-        selectedCategoryHeader = selectedCategory.header
-        tableView.reloadRows(at: [indexPath], with: .none)
-
-        delegate?.categoryViewController(self, didSelectCategory: selectedCategory.header)
-        dismiss(animated: true)
-    }
-
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        let isFirstCell = indexPath.row == 0
-        let isLastCell = indexPath.row == categories.count - 1
-
-        cell.separatorInset = UIEdgeInsets(
-            top: 0,
-            left: isLastCell ? tableView.bounds.width : 16,
-            bottom: 0,
-            right: isLastCell ? 0 : 16
-        )
-
-        var corners: CACornerMask = []
-        if isFirstCell {
-            corners.formUnion([.layerMinXMinYCorner, .layerMaxXMinYCorner])
-        }
-        if isLastCell {
-            corners.formUnion([.layerMinXMaxYCorner, .layerMaxXMaxYCorner])
-        }
-
-        if corners.isEmpty {
-            cell.layer.cornerRadius = 0
-            cell.layer.maskedCorners = []
-            cell.layer.masksToBounds = false
-        } else {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = corners
-            cell.layer.masksToBounds = true
-        }
-    }
-}
-
-extension CategoryViewController: TrackerCategoryStoreDelegate {
-    func trackerCategoryStore(_ store: TrackerCategoryStore, didUpdate categories: [TrackerCategory]) {
-        self.categories = categories
-
-        if categories.isEmpty {
+    
+    private func updateContentVisibility(isEmpty: Bool) {
+        if isEmpty {
             if tableView.superview != nil {
                 tableView.removeFromSuperview()
             }
@@ -306,6 +188,121 @@ extension CategoryViewController: TrackerCategoryStoreDelegate {
                 ])
             }
             tableView.reloadData()
+        }
+    }
+    
+    private func setPlug() {
+        view.addSubview(plugImage)
+        NSLayoutConstraint.activate([
+            plugImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            plugImage.topAnchor.constraint(equalTo: view.topAnchor, constant: 346),
+            plugImage.heightAnchor.constraint(equalToConstant: 80),
+            plugImage.widthAnchor.constraint(equalToConstant: 80)
+        ])
+        
+        view.addSubview(plugLabel)
+        NSLayoutConstraint.activate([
+            plugLabel.topAnchor.constraint(equalTo: plugImage.bottomAnchor, constant: 8),
+            plugLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+    }
+    
+    private func showDeleteConfirmation(for header: String) {
+        let actionSheet = UIAlertController(
+            title: nil,
+            message: "Эта категория точно не нужна?",
+            preferredStyle: .actionSheet
+        )
+        
+        actionSheet.addAction(UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+            self?.viewModel.confirmDeleteCategory(header: header)
+        })
+        actionSheet.addAction(UIAlertAction(title: "Отменить", style: .cancel))
+        
+        present(actionSheet, animated: true)
+    }
+}
+
+extension CategoryViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        viewModel.numberOfCategories
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: CategoryTableViewCell.identifier,
+            for: indexPath
+        ) as? CategoryTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        let cellModel = viewModel.cellModel(at: indexPath.row)
+        cell.configure(header: cellModel.header, isSelected: cellModel.isSelected)
+        cell.backgroundColor = .backgroundDay
+        
+        return cell
+    }
+}
+
+extension CategoryViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        75
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        contextMenuConfigurationForRowAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        let categoryHeader = viewModel.header(at: indexPath.row)
+        
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            let editAction = UIAction(title: "Редактировать") { _ in
+                self?.viewModel.editCategory(header: categoryHeader)
+            }
+            
+            let deleteAction = UIAction(
+                title: "Удалить",
+                attributes: .destructive
+            ) { _ in
+                self?.viewModel.deleteCategory(header: categoryHeader)
+            }
+            
+            return UIMenu(children: [editAction, deleteAction])
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        viewModel.selectCategory(at: indexPath.row)
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        let isFirstCell = indexPath.row == 0
+        let isLastCell = indexPath.row == viewModel.numberOfCategories - 1
+        
+        cell.separatorInset = UIEdgeInsets(
+            top: 0,
+            left: isLastCell ? tableView.bounds.width : 16,
+            bottom: 0,
+            right: isLastCell ? 0 : 16
+        )
+        
+        var corners: CACornerMask = []
+        if isFirstCell {
+            corners.formUnion([.layerMinXMinYCorner, .layerMaxXMinYCorner])
+        }
+        if isLastCell {
+            corners.formUnion([.layerMinXMaxYCorner, .layerMaxXMaxYCorner])
+        }
+        
+        if corners.isEmpty {
+            cell.layer.cornerRadius = 0
+            cell.layer.maskedCorners = []
+            cell.layer.masksToBounds = false
+        } else {
+            cell.layer.cornerRadius = 16
+            cell.layer.maskedCorners = corners
+            cell.layer.masksToBounds = true
         }
     }
 }

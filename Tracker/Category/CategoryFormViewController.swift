@@ -8,13 +8,13 @@
 import UIKit
 
 final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
-
+    
     var editingCategoryHeader: String?
     var onCategoryUpdated: ((_ oldHeader: String, _ newHeader: String) -> Void)?
     
     private let categoryStore = TrackerCategoryStore()
     private lazy var logger = TrackerLogger.shared
-
+    
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = "Новая категория"
@@ -22,7 +22,7 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
-
+    
     private lazy var newCategoryNameField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название категории"
@@ -31,14 +31,14 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
         textField.backgroundColor = .backgroundDay
         textField.layer.cornerRadius = 16
         textField.clipsToBounds = true
-
+        
         let leftPadding = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftView = leftPadding
         textField.leftViewMode = .always
-
+        
         return textField
     }().forAutoLayout
-
+    
     private lazy var doneButton: UIButton = {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
             self?.doneButtonTapped()
@@ -51,29 +51,29 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
         button.isEnabled = false
         return button
     }().forAutoLayout
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setElements()
         newCategoryNameField.delegate = self
-
+        
         if let editingCategoryHeader {
             headerLabel.text = "Редактирование категории"
             newCategoryNameField.text = editingCategoryHeader
             updateDoneButtonState()
         }
     }
-
+    
     private func setElements() {
         view.backgroundColor = .whiteDay
-
+        
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),
             headerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
-
+        
         view.addSubview(newCategoryNameField)
         NSLayoutConstraint.activate([
             newCategoryNameField.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 38),
@@ -81,7 +81,7 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
             newCategoryNameField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             newCategoryNameField.heightAnchor.constraint(equalToConstant: 75)
         ])
-
+        
         view.addSubview(doneButton)
         NSLayoutConstraint.activate([
             doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -90,7 +90,7 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
             doneButton.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
-
+    
     func textField(
         _ textField: UITextField,
         shouldChangeCharactersIn range: NSRange,
@@ -101,17 +101,17 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
         }
         return true
     }
-
+    
     private func updateDoneButtonState() {
         let hasText = !(newCategoryNameField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
         doneButton.isEnabled = hasText
         doneButton.backgroundColor = hasText ? .blackDay : .ypGray
     }
-
+    
     @objc private func doneButtonTapped() {
         let header = newCategoryNameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         guard !header.isEmpty else { return }
-
+        
         do {
             if let editingCategoryHeader {
                 try categoryStore.updateCategory(oldHeader: editingCategoryHeader, newHeader: header)
@@ -124,5 +124,5 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
             logger.error("Не удалось сохранить категорию: \(error)")
         }
     }
-
+    
 }

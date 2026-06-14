@@ -432,9 +432,8 @@ final class NewTrackerViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc private func categoryButtonTapped() {
-        let categoryVC = CategoryViewController()
+        let categoryVC = CategoryViewController(selectedCategoryHeader: selectedCategoryHeader)
         categoryVC.delegate = self
-        categoryVC.selectedCategoryHeader = selectedCategoryHeader
         present(categoryVC, animated: true)
     }
     
