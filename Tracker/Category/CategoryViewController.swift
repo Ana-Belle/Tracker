@@ -86,6 +86,8 @@ final class CategoryViewController: UIViewController {
         return label
     }()
     
+    // MARK: - Initialization
+    
     init(viewModel: CategoryViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -100,6 +102,8 @@ final class CategoryViewController: UIViewController {
         nil
     }
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -107,6 +111,8 @@ final class CategoryViewController: UIViewController {
         setElements()
         viewModel.viewDidLoad()
     }
+    
+    // MARK: - Private Methods
     
     private func bindViewModel() {
         viewModel.onCategoriesUpdated = { [weak self] in
@@ -127,16 +133,16 @@ final class CategoryViewController: UIViewController {
         }
         
         viewModel.onPresentAddCategory = { [weak self] in
-            let categoryFormVC = CategoryFormViewController()
-            self?.present(categoryFormVC, animated: true)
+            self?.present(CategoryFormViewController(), animated: true)
         }
         
         viewModel.onPresentEditCategory = { [weak self] header in
-            let categoryFormVC = CategoryFormViewController()
-            categoryFormVC.editingCategoryHeader = header
-            categoryFormVC.onCategoryUpdated = { [weak self] oldHeader, newHeader in
-                self?.viewModel.categoryUpdated(oldHeader: oldHeader, newHeader: newHeader)
-            }
+            let categoryFormVC = CategoryFormViewController(
+                editingCategoryHeader: header,
+                onCategoryUpdated: { [weak self] oldHeader, newHeader in
+                    self?.viewModel.categoryUpdated(oldHeader: oldHeader, newHeader: newHeader)
+                }
+            )
             self?.present(categoryFormVC, animated: true)
         }
         
@@ -237,6 +243,7 @@ extension CategoryViewController: UITableViewDataSource {
         }
         
         let cellModel = viewModel.cellModel(at: indexPath.row)
+        guard let cellModel else { return UITableViewCell() }
         cell.configure(header: cellModel.header, isSelected: cellModel.isSelected)
         cell.backgroundColor = .backgroundDay
         

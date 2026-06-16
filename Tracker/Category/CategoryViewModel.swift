@@ -56,8 +56,11 @@ final class CategoryViewModel {
         categories.count
     }
     
-    func cellModel(at index: Int) -> CategoryCellModel {
+    func cellModel(at index: Int) -> CategoryCellModel? {
+        guard categories.indices.contains(index) else { return nil }
+        
         let category = categories[index]
+        
         return CategoryCellModel(
             header: category.header,
             isSelected: category.header == selectedCategoryHeader

@@ -7,17 +7,12 @@
 
 import UIKit
 
-final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
+final class CategoryFormViewController: UIViewController {
     
-    var editingCategoryHeader: String?
-    var onCategoryUpdated: ((_ oldHeader: String, _ newHeader: String) -> Void)?
-    
-    private let categoryStore = TrackerCategoryStore()
-    private lazy var logger = TrackerLogger.shared
+    private let viewModel: CategoryFormViewModel
     
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
-        label.text = "Новая категория"
         label.textColor = .blackDay
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
@@ -52,16 +47,61 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
         return button
     }().forAutoLayout
     
+    // MARK: - Initialization
+    
+    init(viewModel: CategoryFormViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    convenience init(
+        editingCategoryHeader: String? = nil,
+        onCategoryUpdated: ((_ oldHeader: String, _ newHeader: String) -> Void)? = nil
+    ) {
+        self.init(viewModel: CategoryFormViewModel(
+            editingCategoryHeader: editingCategoryHeader,
+            onCategoryUpdated: onCategoryUpdated
+        ))
+    }
+    
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        nil
+    }
+    
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        bindViewModel()
         setElements()
         newCategoryNameField.delegate = self
+        viewModel.viewDidLoad()
+    }
+    
+    // MARK: - Private Methods
+    
+    private func bindViewModel() {
+        viewModel.onTitleUpdated = { [weak self] title in
+            self?.headerLabel.text = title
+        }
         
-        if let editingCategoryHeader {
-            headerLabel.text = "Редактирование категории"
-            newCategoryNameField.text = editingCategoryHeader
-            updateDoneButtonState()
+        viewModel.onInitialTextUpdated = { [weak self] text in
+            self?.newCategoryNameField.text = text
+        }
+        
+        viewModel.onDoneButtonStateChanged = { [weak self] isEnabled in
+            self?.doneButton.isEnabled = isEnabled
+            self?.doneButton.backgroundColor = isEnabled ? .blackDay : .ypGray
+        }
+        
+        viewModel.onDismiss = { [weak self] in
+            self?.dismiss(animated: true)
+        }
+        
+        viewModel.onError = { message in
+            TrackerLogger.shared.error(message)
         }
     }
     
@@ -91,38 +131,24 @@ final class CategoryFormViewController: UIViewController, UITextFieldDelegate {
         ])
     }
     
+    private func doneButtonTapped() {
+        viewModel.doneButtonTapped(text: newCategoryNameField.text ?? "")
+    }
+}
+
+// MARK: - UITextFieldDelegate
+
+extension CategoryFormViewController: UITextFieldDelegate {
+    
     func textField(
         _ textField: UITextField,
         shouldChangeCharactersIn range: NSRange,
         replacementString string: String
     ) -> Bool {
-        DispatchQueue.main.async {
-            self.updateDoneButtonState()
+        DispatchQueue.main.async { [weak self] in
+            self?.viewModel.textDidChange(textField.text ?? "")
         }
         return true
-    }
-    
-    private func updateDoneButtonState() {
-        let hasText = !(newCategoryNameField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-        doneButton.isEnabled = hasText
-        doneButton.backgroundColor = hasText ? .blackDay : .ypGray
-    }
-    
-    @objc private func doneButtonTapped() {
-        let header = newCategoryNameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        guard !header.isEmpty else { return }
-        
-        do {
-            if let editingCategoryHeader {
-                try categoryStore.updateCategory(oldHeader: editingCategoryHeader, newHeader: header)
-                onCategoryUpdated?(editingCategoryHeader, header)
-            } else {
-                try categoryStore.addCategory(header: header)
-            }
-            dismiss(animated: true)
-        } catch {
-            logger.error("Не удалось сохранить категорию: \(error)")
-        }
     }
     
 }

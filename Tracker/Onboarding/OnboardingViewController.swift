@@ -9,35 +9,16 @@ import UIKit
 
 final class OnboardingViewController: UIPageViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate {
     
-    private lazy var pages: [UIViewController] = {
-        let pageView1 = UIViewController()
-        let backgroundView1 = getBackgroundView(imageResource: .onboarding1)
-        let label1 = getLabel(text: "Отслеживайте только\nто, что хотите")
-        
-        let pageView2 = UIViewController()
-        let backgroundView2 = getBackgroundView(imageResource: .onboarding2)
-        let label2 = getLabel(text: "Даже если это\nне литры воды и йога")
-        
-        pageView1.view.addSubview(backgroundView1)
-        pageView1.view.addSubview(label1)
-        
-        pageView2.view.addSubview(backgroundView2)
-        pageView2.view.addSubview(label2)
-        
-        NSLayoutConstraint.activate([
-            label1.centerXAnchor.constraint(equalTo: pageView1.view.centerXAnchor),
-            label1.topAnchor.constraint(equalTo: pageView1.view.topAnchor, constant: 432),
-            label1.leadingAnchor.constraint(equalTo: pageView1.view.leadingAnchor, constant: 16),
-            label1.trailingAnchor.constraint(equalTo: pageView1.view.trailingAnchor, constant: -16),
-            
-            label2.centerXAnchor.constraint(equalTo: pageView2.view.centerXAnchor),
-            label2.topAnchor.constraint(equalTo: pageView2.view.topAnchor, constant: 432),
-            label2.leadingAnchor.constraint(equalTo: pageView2.view.leadingAnchor, constant: 16),
-            label2.trailingAnchor.constraint(equalTo: pageView2.view.trailingAnchor, constant: -16)
-        ])
-        
-        return [pageView1, pageView2]
-    }()
+    private lazy var pages: [UIViewController] = [
+        OnboardingPageViewController(
+            image: .onboarding1,
+            text: "Отслеживайте только\nто, что хотите"
+        ),
+        OnboardingPageViewController(
+            image: .onboarding2,
+            text: "Даже если это\nне литры воды и йога"
+        )
+    ]
     
     private lazy var button: UIButton = {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
@@ -102,26 +83,6 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         ])
     }
     
-    private func getBackgroundView(imageResource: ImageResource) -> UIImageView {
-        let backgroundImage = UIImage(resource: imageResource)
-        let backgroundView = UIImageView(image: backgroundImage)
-        backgroundView.frame = view.bounds
-        backgroundView.contentMode = .scaleAspectFill
-        backgroundView.contentMode = .scaleAspectFit
-        return backgroundView
-    }
-    
-    private func getLabel(text: String) -> UILabel {
-        let label = UILabel()
-            .forAutoLayout
-        label.text = text
-        label.font = UIFont.boldSystemFont(ofSize: 32)
-        label.textColor = .blackDay
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        return label
-    }
-    
     // MARK: - UIPageViewControllerDataSource
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
@@ -154,8 +115,12 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
     
     // MARK: - UIPageViewControllerDelegate
     
-    func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        
+    func pageViewController(
+        _ pageViewController: UIPageViewController,
+        didFinishAnimating finished: Bool,
+        previousViewControllers: [UIViewController],
+        transitionCompleted completed: Bool
+    ) {
         if let currentViewController = pageViewController.viewControllers?.first,
            let currentIndex = pages.firstIndex(of: currentViewController) {
             pageControl.currentPage = currentIndex

@@ -8,9 +8,12 @@
 import UIKit
 
 final class StatisticsViewController: UIViewController {
+    private let titleLabel = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        view.backgroundColor = .whiteDay
+        titleLabel.text = "Статистика"
     }
-    
 }
