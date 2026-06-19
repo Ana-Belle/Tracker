@@ -1,5 +1,5 @@
 //
-//  NewTrackerViewController.swift
+//  TrackerFormViewController.swift
 //  Tracker
 //
 //  Created by Anastasia Belyakova on 07.05.2026.
@@ -7,19 +7,20 @@
 
 import UIKit
 
-protocol NewTrackerViewControllerDelegate: AnyObject {
+protocol TrackerFormViewControllerDelegate: AnyObject {
     var trackersCount: UInt { get }
     func addNewTrackerToCategory(tracker: Tracker, to categoryHeader: String)
+    func updateTracker(tracker: Tracker, categoryHeader: String, previousCategoryHeader: String)
 }
 
-final class NewTrackerViewController: UIViewController {
-    
-    weak var delegate: NewTrackerViewControllerDelegate? {
+final class TrackerFormViewController: UIViewController {
+
+    weak var delegate: TrackerFormViewControllerDelegate? {
         didSet { viewModel.delegate = delegate }
     }
     
-    private let viewModel: NewTrackerViewModel
-    
+    private let viewModel: TrackerFormViewModel
+
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
@@ -28,13 +29,12 @@ final class NewTrackerViewController: UIViewController {
     
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
-        label.text = "Новая привычка"
         label.textColor = .blackDay
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
     
-    private lazy var newTrackerNameField: UITextField = {
+    private lazy var trackerNameField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название трекера"
         textField.textColor = .blackDay
@@ -200,7 +200,7 @@ final class NewTrackerViewController: UIViewController {
         return button
     }().forAutoLayout
     
-    init(viewModel: NewTrackerViewModel = NewTrackerViewModel()) {
+    init(viewModel: TrackerFormViewModel = TrackerFormViewModel()) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -215,8 +215,12 @@ final class NewTrackerViewController: UIViewController {
         
         bindViewModel()
         setElements()
-        newTrackerNameField.delegate = self
+        trackerNameField.delegate = self
+        headerLabel.text = viewModel.screenTitle
+        createButton.setTitle(viewModel.actionButtonTitle, for: .normal)
+        trackerNameField.text = viewModel.initialTrackerName
         viewModel.viewDidLoad()
+        emojiColorCollectionView.reloadData()
     }
     
     override func viewDidLayoutSubviews() {
@@ -241,7 +245,7 @@ final class NewTrackerViewController: UIViewController {
         }
         
         viewModel.onClearTrackerName = { [weak self] in
-            self?.newTrackerNameField.text = ""
+            self?.trackerNameField.text = ""
         }
         
         viewModel.onDismiss = { [weak self] in
@@ -287,17 +291,17 @@ final class NewTrackerViewController: UIViewController {
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
         
-        scrollView.addSubview(newTrackerNameField)
+        scrollView.addSubview(trackerNameField)
         NSLayoutConstraint.activate([
-            newTrackerNameField.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 24),
-            newTrackerNameField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            newTrackerNameField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            newTrackerNameField.heightAnchor.constraint(equalToConstant: 75)
+            trackerNameField.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 24),
+            trackerNameField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            trackerNameField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            trackerNameField.heightAnchor.constraint(equalToConstant: 75)
         ])
         
         scrollView.addSubview(stackView)
         NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: newTrackerNameField.bottomAnchor, constant: 24),
+            stackView.topAnchor.constraint(equalTo: trackerNameField.bottomAnchor, constant: 24),
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
@@ -385,7 +389,7 @@ final class NewTrackerViewController: UIViewController {
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             item.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
             
-            let rowHeight: CGFloat = sectionIndex == NewTrackerSection.emoji.rawValue ? 52 : 56
+            let rowHeight: CGFloat = sectionIndex == TrackerSection.emoji.rawValue ? 52 : 56
             let rowGroupSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
                 heightDimension: .absolute(rowHeight)
@@ -428,23 +432,23 @@ final class NewTrackerViewController: UIViewController {
     }
     
     private func createButtonTapped() {
-        viewModel.createButtonTapped(trackerName: newTrackerNameField.text ?? "")
+        viewModel.createButtonTapped(trackerName: trackerNameField.text ?? "")
     }
 }
 
-extension NewTrackerViewController: CategoryViewControllerDelegate {
+extension TrackerFormViewController: CategoryViewControllerDelegate {
     func categoryViewController(_ viewController: CategoryViewController, didSelectCategory header: String) {
-        viewModel.categorySelected(header, trackerName: newTrackerNameField.text ?? "")
+        viewModel.categorySelected(header, trackerName: trackerNameField.text ?? "")
     }
 }
 
-extension NewTrackerViewController: ScheduleViewControllerDelegate {
+extension TrackerFormViewController: ScheduleViewControllerDelegate {
     func didSelectSchedule(_ weekDays: [WeekDay]) {
-        viewModel.scheduleSelected(weekDays, trackerName: newTrackerNameField.text ?? "")
+        viewModel.scheduleSelected(weekDays, trackerName: trackerNameField.text ?? "")
     }
 }
 
-extension NewTrackerViewController: UICollectionViewDataSource {
+extension TrackerFormViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         viewModel.numberOfSections
     }
@@ -457,7 +461,7 @@ extension NewTrackerViewController: UICollectionViewDataSource {
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        guard let section = NewTrackerSection(rawValue: indexPath.section) else {
+        guard let section = TrackerSection(rawValue: indexPath.section) else {
             return UICollectionViewCell()
         }
         
@@ -508,11 +512,11 @@ extension NewTrackerViewController: UICollectionViewDataSource {
     }
 }
 
-extension NewTrackerViewController: UICollectionViewDelegate {
+extension TrackerFormViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let section = NewTrackerSection(rawValue: indexPath.section) else { return }
+        guard let section = TrackerSection(rawValue: indexPath.section) else { return }
         
-        let trackerName = newTrackerNameField.text ?? ""
+        let trackerName = trackerNameField.text ?? ""
         
         switch section {
         case .emoji:
@@ -525,7 +529,7 @@ extension NewTrackerViewController: UICollectionViewDelegate {
 
 // MARK: - UITextFieldDelegate
 
-extension NewTrackerViewController: UITextFieldDelegate {
+extension TrackerFormViewController: UITextFieldDelegate {
     func textField(
         _ textField: UITextField,
         shouldChangeCharactersIn range: NSRange,

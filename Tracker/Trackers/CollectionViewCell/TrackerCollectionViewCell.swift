@@ -10,6 +10,8 @@ import UIKit
 protocol TrackerCellDelegate: AnyObject {
     func completeTracker(id: UUID, at indexPath: IndexPath)
     func uncompleteTracker(id: UUID, at indexPath: IndexPath)
+    func editTracker(id: UUID, at indexPath: IndexPath)
+    func requestDeleteTracker(id: UUID, at indexPath: IndexPath)
 }
 
 final class TrackerCollectionViewCell: UICollectionViewCell {
@@ -68,6 +70,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
+        setupContextMenu()
     }
     
     @available(*, unavailable)
@@ -108,6 +111,11 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         ])
         
         contentView.bringSubviewToFront(plusButton)
+    }
+
+    private func setupContextMenu() {
+        let interaction = UIContextMenuInteraction(delegate: self)
+        trackerBackgroundView.addInteraction(interaction)
     }
     
     func configure(with tracker: Tracker, isCompletedToday: Bool, completedDays: Int, indexPath: IndexPath) {
@@ -154,5 +162,27 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
             delegate?.completeTracker(id: trackerId, at: indexPath)
         }
     }
-    
+}
+
+// MARK: - UIContextMenuInteractionDelegate
+
+extension TrackerCollectionViewCell: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        guard let trackerId = trackerId, let indexPath = indexPath else { return nil }
+
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            let editAction = UIAction(title: "Редактировать") { _ in
+                self?.delegate?.editTracker(id: trackerId, at: indexPath)
+            }
+
+            let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
+                self?.delegate?.requestDeleteTracker(id: trackerId, at: indexPath)
+            }
+
+            return UIMenu(children: [editAction, deleteAction])
+        }
+    }
 }

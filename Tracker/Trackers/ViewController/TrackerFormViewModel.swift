@@ -1,5 +1,5 @@
 //
-//  NewTrackerViewModel.swift
+//  TrackerFormViewModel.swift
 //  Tracker
 //
 //  Created by Anastasia Belyakova on 17.06.2026.
@@ -7,7 +7,12 @@
 
 import UIKit
 
-enum NewTrackerSection: Int, CaseIterable {
+struct TrackerEditingContext {
+    let tracker: Tracker
+    let categoryHeader: String
+}
+
+enum TrackerSection: Int, CaseIterable {
     case emoji
     case color
     
@@ -19,8 +24,8 @@ enum NewTrackerSection: Int, CaseIterable {
     }
 }
 
-final class NewTrackerViewModel {
-    
+final class TrackerFormViewModel {
+
     // MARK: - Bindings
     
     var onCategoryButtonTitleUpdated: ((String) -> Void)?
@@ -35,13 +40,42 @@ final class NewTrackerViewModel {
     
     // MARK: - Properties
     
-    weak var delegate: NewTrackerViewControllerDelegate?
-    
+    weak var delegate: TrackerFormViewControllerDelegate?
+
+    private let editingContext: TrackerEditingContext?
+
     private(set) var selectedCategoryHeader: String?
-    
+
     private var selectedWeekDays: [WeekDay] = []
     private var selectedEmojiIndex: Int?
     private var selectedColorIndex: Int?
+
+    var isEditing: Bool {
+        editingContext != nil
+    }
+
+    var screenTitle: String {
+        isEditing ? "Редактирование привычки" : "Новая привычка"
+    }
+
+    var actionButtonTitle: String {
+        isEditing ? "Сохранить" : "Создать"
+    }
+
+    var initialTrackerName: String? {
+        editingContext?.tracker.name
+    }
+
+    init(editingContext: TrackerEditingContext? = nil) {
+        self.editingContext = editingContext
+
+        if let editingContext {
+            selectedCategoryHeader = editingContext.categoryHeader
+            selectedWeekDays = editingContext.tracker.schedule
+            selectedEmojiIndex = emojis.firstIndex(of: editingContext.tracker.emoji)
+            selectedColorIndex = Self.index(of: editingContext.tracker.color, in: colors)
+        }
+    }
     
     let emojis = [
         "🙂", "😻", "🌺", "🐶", "❤️", "😱",
@@ -58,15 +92,25 @@ final class NewTrackerViewModel {
     // MARK: - Lifecycle
     
     func viewDidLoad() {
-        onCategoryButtonTitleUpdated?("")
-        onScheduleButtonTitleUpdated?("")
-        onCreateButtonStateChanged?(false)
+        if let selectedCategoryHeader {
+            onCategoryButtonTitleUpdated?(selectedCategoryHeader)
+        } else {
+            onCategoryButtonTitleUpdated?("")
+        }
+
+        if selectedWeekDays.isEmpty {
+            onScheduleButtonTitleUpdated?("")
+        } else {
+            onScheduleButtonTitleUpdated?(formatWeekDays(selectedWeekDays))
+        }
+
+        updateCreateButtonState(trackerName: initialTrackerName ?? "")
     }
     
     // MARK: - Collection View
     
     var numberOfSections: Int {
-        NewTrackerSection.allCases.count
+        TrackerSection.allCases.count
     }
     
     func numberOfItems(in section: Int) -> Int {
@@ -74,7 +118,7 @@ final class NewTrackerViewModel {
     }
     
     func sectionTitle(for section: Int) -> String {
-        NewTrackerSection(rawValue: section)?.title ?? ""
+        TrackerSection(rawValue: section)?.title ?? ""
     }
     
     func emoji(at index: Int) -> String {
@@ -118,16 +162,37 @@ final class NewTrackerViewModel {
     
     func createButtonTapped(trackerName: String) {
         guard let selectedCategoryHeader else { return }
-        
-        let tracker = Tracker(
-            id: UUID(),
-            name: trackerName.isEmpty ? "Новый трекер" : trackerName,
-            color: selectedColorIndex.map { colors[$0] } ?? .colorSelection5,
-            emoji: selectedEmojiIndex.map { emojis[$0] } ?? "🌸",
-            schedule: selectedWeekDays
-        )
-        
-        delegate?.addNewTrackerToCategory(tracker: tracker, to: selectedCategoryHeader)
+
+        let trackerName = trackerName.isEmpty ? "Новый трекер" : trackerName
+        let color = selectedColorIndex.map { colors[$0] } ?? .colorSelection5
+        let emoji = selectedEmojiIndex.map { emojis[$0] } ?? "🌸"
+
+        if let editingContext {
+            let tracker = Tracker(
+                id: editingContext.tracker.id,
+                name: trackerName,
+                color: color,
+                emoji: emoji,
+                schedule: selectedWeekDays
+            )
+
+            delegate?.updateTracker(
+                tracker: tracker,
+                categoryHeader: selectedCategoryHeader,
+                previousCategoryHeader: editingContext.categoryHeader
+            )
+        } else {
+            let tracker = Tracker(
+                id: UUID(),
+                name: trackerName,
+                color: color,
+                emoji: emoji,
+                schedule: selectedWeekDays
+            )
+
+            delegate?.addNewTrackerToCategory(tracker: tracker, to: selectedCategoryHeader)
+        }
+
         onDismiss?()
     }
     
@@ -148,7 +213,7 @@ final class NewTrackerViewModel {
         let previousIndex = selectedEmojiIndex
         selectedEmojiIndex = index
         reloadSelectionItems(
-            section: NewTrackerSection.emoji.rawValue,
+            section: TrackerSection.emoji.rawValue,
             previousIndex: previousIndex,
             newIndex: index
         )
@@ -159,7 +224,7 @@ final class NewTrackerViewModel {
         let previousIndex = selectedColorIndex
         selectedColorIndex = index
         reloadSelectionItems(
-            section: NewTrackerSection.color.rawValue,
+            section: TrackerSection.color.rawValue,
             previousIndex: previousIndex,
             newIndex: index
         )
@@ -192,5 +257,29 @@ final class NewTrackerViewModel {
             return "Каждый день"
         }
         return days.map(\.rawValue).joined(separator: ", ")
+    }
+
+    private static func index(of color: UIColor, in colors: [UIColor]) -> Int? {
+        guard let targetComponents = rgbaComponents(from: color) else { return nil }
+
+        return colors.firstIndex { candidate in
+            guard let candidateComponents = rgbaComponents(from: candidate) else { return false }
+            return componentsMatch(targetComponents, candidateComponents)
+        }
+    }
+
+    private static func rgbaComponents(from color: UIColor) -> [CGFloat]? {
+        let resolvedColor = color.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+        return CoreDataValueCodec.encodeColor(resolvedColor) as? [CGFloat]
+    }
+
+    private static func componentsMatch(
+        _ lhs: [CGFloat],
+        _ rhs: [CGFloat],
+        tolerance: CGFloat = 0.01
+    ) -> Bool {
+        guard lhs.count == 4, rhs.count == 4 else { return false }
+
+        return zip(lhs, rhs).allSatisfy { abs($0 - $1) <= tolerance }
     }
 }

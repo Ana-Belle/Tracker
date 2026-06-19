@@ -105,11 +105,23 @@ final class TrackersViewController: UIViewController {
         
         viewModel.onPresentNewTracker = { [weak self] in
             guard let self else { return }
-            let newTrackerVC = NewTrackerViewController()
+            let newTrackerVC = TrackerFormViewController()
             newTrackerVC.delegate = self
             self.present(newTrackerVC, animated: true)
         }
-        
+
+        viewModel.onPresentEditTracker = { [weak self] tracker, categoryHeader in
+            guard let self else { return }
+            let editingContext = TrackerEditingContext(tracker: tracker, categoryHeader: categoryHeader)
+            let editTrackerVC = TrackerFormViewController(viewModel: TrackerFormViewModel(editingContext: editingContext))
+            editTrackerVC.delegate = self
+            self.present(editTrackerVC, animated: true)
+        }
+
+        viewModel.onShowDeleteConfirmation = { [weak self] trackerId in
+            self?.showDeleteConfirmation(for: trackerId)
+        }
+
         viewModel.onLogInfo = { message in
             TrackerLogger.shared.info(message)
         }
@@ -200,6 +212,28 @@ final class TrackersViewController: UIViewController {
         plugLabel.removeFromSuperview()
     }
     
+    private func showDeleteConfirmation(for trackerId: UUID) {
+        let alert = UIAlertController(
+            title: nil,
+            message: "Уверены, что хотите удалить трекер",
+            preferredStyle: .actionSheet
+        )
+
+        alert.addAction(UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+            self?.viewModel.deleteTracker(id: trackerId)
+        })
+
+        alert.addAction(UIAlertAction(title: "Отменить", style: .cancel))
+
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = view
+            popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+
+        present(alert, animated: true)
+    }
+
     private func updateContentVisibility(hasTrackers: Bool) {
         if hasTrackers {
             if trackerCollectionView.superview == nil {
@@ -308,18 +342,34 @@ extension TrackersViewController: TrackerCellDelegate {
     func completeTracker(id: UUID, at indexPath: IndexPath) {
         viewModel.completeTracker(id: id, at: indexPath)
     }
-    
+
     func uncompleteTracker(id: UUID, at indexPath: IndexPath) {
         viewModel.uncompleteTracker(id: id, at: indexPath)
     }
+
+    func editTracker(id: UUID, at indexPath: IndexPath) {
+        viewModel.editTracker(at: indexPath)
+    }
+
+    func requestDeleteTracker(id: UUID, at indexPath: IndexPath) {
+        viewModel.requestDeleteTracker(id: id)
+    }
 }
 
-extension TrackersViewController: NewTrackerViewControllerDelegate {
+extension TrackersViewController: TrackerFormViewControllerDelegate {
     var trackersCount: UInt {
         viewModel.trackersCount
     }
     
     func addNewTrackerToCategory(tracker: Tracker, to categoryHeader: String) {
         viewModel.addNewTrackerToCategory(tracker: tracker, to: categoryHeader)
+    }
+
+    func updateTracker(tracker: Tracker, categoryHeader: String, previousCategoryHeader: String) {
+        viewModel.updateTracker(
+            tracker: tracker,
+            categoryHeader: categoryHeader,
+            previousCategoryHeader: previousCategoryHeader
+        )
     }
 }

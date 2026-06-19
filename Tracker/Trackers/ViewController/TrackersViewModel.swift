@@ -22,6 +22,8 @@ final class TrackersViewModel {
     var onCollectionViewReloadData: (() -> Void)?
     var onCollectionViewReloadItems: ((IndexPath) -> Void)?
     var onPresentNewTracker: (() -> Void)?
+    var onPresentEditTracker: ((Tracker, String) -> Void)?
+    var onShowDeleteConfirmation: ((UUID) -> Void)?
     var onLogInfo: ((String) -> Void)?
     var onError: ((String) -> Void)?
     
@@ -159,8 +161,46 @@ final class TrackersViewModel {
             onError?("Не удалось сохранить трекер: \(error)")
         }
     }
-    
+
+    func editTracker(at indexPath: IndexPath) {
+        guard
+            let cellViewModel = cellViewModel(at: indexPath),
+            let categoryHeader = categoryHeader(for: cellViewModel.tracker.id)
+        else {
+            return
+        }
+
+        onPresentEditTracker?(cellViewModel.tracker, categoryHeader)
+    }
+
+    func requestDeleteTracker(id: UUID) {
+        onShowDeleteConfirmation?(id)
+    }
+
+    func deleteTracker(id: UUID) {
+        do {
+            try trackerStore.deleteTracker(id: id)
+        } catch {
+            onError?("Не удалось удалить трекер: \(error)")
+        }
+    }
+
+    func updateTracker(tracker: Tracker, categoryHeader: String, previousCategoryHeader: String) {
+        do {
+            try categoryStore.addCategory(header: categoryHeader)
+            try trackerStore.updateTracker(tracker, toCategoryHeader: categoryHeader)
+        } catch {
+            onError?("Не удалось обновить трекер: \(error)")
+        }
+    }
+
     // MARK: - Private Methods
+
+    private func categoryHeader(for trackerId: UUID) -> String? {
+        categories.first { category in
+            category.trackers.contains { $0.id == trackerId }
+        }?.header
+    }
     
     private func updateContentVisibility() {
         onContentVisibilityChanged?(hasTrackersToDisplay)
