@@ -34,7 +34,7 @@ final class TrackersViewController: UIViewController {
             .forAutoLayout
         label.text = "Что будем отслеживать?"
         label.textColor = .blackDay
-        label.font = .systemFont(ofSize: 12)
+        label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }()
     
