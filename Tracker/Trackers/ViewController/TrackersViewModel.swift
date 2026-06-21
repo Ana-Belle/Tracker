@@ -18,7 +18,7 @@ final class TrackersViewModel {
     
     // MARK: - Bindings
     
-    var onContentVisibilityChanged: ((Bool) -> Void)?
+    var onContentVisibilityChanged: ((_ hasTrackersToDisplay: Bool, _ showFiltersButton: Bool) -> Void)?
     var onCollectionViewReloadData: (() -> Void)?
     var onCollectionViewReloadItems: ((IndexPath) -> Void)?
     var onPresentNewTracker: (() -> Void)?
@@ -26,6 +26,8 @@ final class TrackersViewModel {
     var onShowDeleteConfirmation: ((UUID) -> Void)?
     var onLogInfo: ((String) -> Void)?
     var onError: ((String) -> Void)?
+    var onPresentFilters: (() -> Void)?
+    var onSelectedDateUpdated: ((Date) -> Void)?
     
     // MARK: - Properties
     
@@ -35,6 +37,7 @@ final class TrackersViewModel {
     
     private var categories: [TrackerCategory] = []
     private(set) var selectedDate = Date()
+    private(set) var selectedFilter: Filters = .allTrackers
     
     private var filteredCategories: [TrackerCategory] {
         let weekDay = weekDay(from: selectedDate)
@@ -49,7 +52,8 @@ final class TrackersViewModel {
         
         return categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
-                tracker.schedule.contains(weekDay)
+                guard tracker.schedule.contains(weekDay) else { return false }
+                return matchesSelectedFilter(tracker)
             }
             
             if !filteredTrackers.isEmpty {
@@ -61,6 +65,19 @@ final class TrackersViewModel {
     
     private var hasTrackersToDisplay: Bool {
         !filteredCategories.isEmpty && filteredCategories.contains { !$0.trackers.isEmpty }
+    }
+    
+    private var hasTrackersForSelectedDate: Bool {
+        let weekDay = weekDay(from: selectedDate)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let selectedDay = calendar.startOfDay(for: selectedDate)
+        
+        guard selectedDay <= today else { return false }
+        
+        return categories.contains { category in
+            category.trackers.contains { $0.schedule.contains(weekDay) }
+        }
     }
     
     // MARK: - Initialization
@@ -124,6 +141,10 @@ final class TrackersViewModel {
     func dateChanged(_ date: Date) {
         selectedDate = date
         
+        if selectedFilter == .trackersForToday {
+            selectedFilter = .allTrackers
+        }
+        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
         onLogInfo?("Выбранная дата: \(dateFormatter.string(from: date))")
@@ -134,7 +155,7 @@ final class TrackersViewModel {
     func completeTracker(id: UUID, at indexPath: IndexPath) {
         do {
             try recordStore.addRecord(trackerId: id, date: selectedDate)
-            onCollectionViewReloadItems?(indexPath)
+            reloadAfterCompletionChange(at: indexPath)
         } catch {
             onError?("Не удалось сохранить выполнение трекера: \(error)")
         }
@@ -143,7 +164,7 @@ final class TrackersViewModel {
     func uncompleteTracker(id: UUID, at indexPath: IndexPath) {
         do {
             try recordStore.deleteRecord(trackerId: id, date: selectedDate)
-            onCollectionViewReloadItems?(indexPath)
+            reloadAfterCompletionChange(at: indexPath)
         } catch {
             onError?("Не удалось удалить выполнение трекера: \(error)")
         }
@@ -161,7 +182,7 @@ final class TrackersViewModel {
             onError?("Не удалось сохранить трекер: \(error)")
         }
     }
-
+    
     func editTracker(at indexPath: IndexPath) {
         guard
             let cellViewModel = cellViewModel(at: indexPath),
@@ -169,14 +190,14 @@ final class TrackersViewModel {
         else {
             return
         }
-
+        
         onPresentEditTracker?(cellViewModel.tracker, categoryHeader)
     }
-
+    
     func requestDeleteTracker(id: UUID) {
         onShowDeleteConfirmation?(id)
     }
-
+    
     func deleteTracker(id: UUID) {
         do {
             try trackerStore.deleteTracker(id: id)
@@ -184,7 +205,7 @@ final class TrackersViewModel {
             onError?("Не удалось удалить трекер: \(error)")
         }
     }
-
+    
     func updateTracker(tracker: Tracker, categoryHeader: String, previousCategoryHeader: String) {
         do {
             try categoryStore.addCategory(header: categoryHeader)
@@ -193,9 +214,43 @@ final class TrackersViewModel {
             onError?("Не удалось обновить трекер: \(error)")
         }
     }
-
+    
+    func filtersButtonTapped() {
+        onPresentFilters?()
+    }
+    
+    func selectFilter(_ filter: Filters) {
+        selectedFilter = filter
+        
+        if filter == .trackersForToday {
+            selectedDate = Date()
+            onSelectedDateUpdated?(selectedDate)
+        }
+        
+        updateContentVisibility()
+    }
+    
     // MARK: - Private Methods
-
+    
+    private func matchesSelectedFilter(_ tracker: Tracker) -> Bool {
+        switch selectedFilter {
+        case .allTrackers, .trackersForToday:
+            return true
+        case .completed:
+            return recordStore.isTrackerCompleted(trackerId: tracker.id, on: selectedDate)
+        case .notCompleted:
+            return !recordStore.isTrackerCompleted(trackerId: tracker.id, on: selectedDate)
+        }
+    }
+    
+    private func reloadAfterCompletionChange(at indexPath: IndexPath) {
+        if selectedFilter == .completed || selectedFilter == .notCompleted {
+            updateContentVisibility()
+        } else {
+            onCollectionViewReloadItems?(indexPath)
+        }
+    }
+    
     private func categoryHeader(for trackerId: UUID) -> String? {
         categories.first { category in
             category.trackers.contains { $0.id == trackerId }
@@ -203,7 +258,7 @@ final class TrackersViewModel {
     }
     
     private func updateContentVisibility() {
-        onContentVisibilityChanged?(hasTrackersToDisplay)
+        onContentVisibilityChanged?(hasTrackersToDisplay, hasTrackersForSelectedDate)
         onCollectionViewReloadData?()
     }
     
@@ -246,7 +301,6 @@ extension TrackersViewModel: TrackerStoreDelegate {
 
 extension TrackersViewModel: TrackerRecordStoreDelegate {
     func trackerRecordStore(_ store: TrackerRecordStore, didUpdate records: [TrackerRecord]) {
-        guard hasTrackersToDisplay else { return }
-        onCollectionViewReloadData?()
+        updateContentVisibility()
     }
 }
