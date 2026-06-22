@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AppMetricaCore
 
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +17,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow()
         window?.rootViewController = OnboardingViewController()
         window?.makeKeyAndVisible()
+
+        AnalyticsService.activate()
+
         return true
     }
     

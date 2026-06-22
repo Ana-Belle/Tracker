@@ -15,8 +15,10 @@ protocol TrackerCellDelegate: AnyObject {
 }
 
 final class TrackerCollectionViewCell: UICollectionViewCell {
+    private let analyticsService = AnalyticsService()
+
     private var tracker: Tracker?
-    
+
     private lazy var trackerBackgroundView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 16
@@ -152,6 +154,8 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     }
     
     @objc private func plusButtonTapped() {
+        analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "track"])
+
         guard let trackerId = trackerId, let indexPath = indexPath else {
             assertionFailure("no trackerId")
             return
@@ -174,11 +178,13 @@ extension TrackerCollectionViewCell: UIContextMenuInteractionDelegate {
         guard let trackerId = trackerId, let indexPath = indexPath else { return nil }
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
-            let editAction = UIAction(title: "Редактировать") { _ in
+            let editAction = UIAction(title: "Редактировать") { [weak self] _ in
+                self?.analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "edit"])
                 self?.delegate?.editTracker(id: trackerId, at: indexPath)
             }
 
             let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
+                self?.analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "delete"])
                 self?.delegate?.requestDeleteTracker(id: trackerId, at: indexPath)
             }
 

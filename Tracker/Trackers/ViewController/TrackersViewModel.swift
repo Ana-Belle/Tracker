@@ -34,7 +34,9 @@ final class TrackersViewModel {
     private let categoryStore: TrackerCategoryStore
     private let trackerStore: TrackerStore
     private let recordStore: TrackerRecordStore
-    
+
+    private let analyticsService = AnalyticsService()
+
     private var categories: [TrackerCategory] = []
     private(set) var selectedDate = Date()
     private(set) var selectedFilter: Filters = .allTrackers
@@ -137,6 +139,7 @@ final class TrackersViewModel {
     // MARK: - Actions
     
     func plusButtonTapped() {
+        analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "add_track"])
         onPresentNewTracker?()
     }
     
@@ -218,6 +221,7 @@ final class TrackersViewModel {
     }
     
     func filtersButtonTapped() {
+        analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "filter"])
         onPresentFilters?()
     }
     
