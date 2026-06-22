@@ -38,6 +38,7 @@ final class TrackersViewModel {
     private var categories: [TrackerCategory] = []
     private(set) var selectedDate = Date()
     private(set) var selectedFilter: Filters = .allTrackers
+    private var searchText = ""
     
     private var filteredCategories: [TrackerCategory] {
         let weekDay = weekDay(from: selectedDate)
@@ -53,6 +54,7 @@ final class TrackersViewModel {
         return categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
                 guard tracker.schedule.contains(weekDay) else { return false }
+                guard matchesSearchQuery(tracker) else { return false }
                 return matchesSelectedFilter(tracker)
             }
             
@@ -230,7 +232,17 @@ final class TrackersViewModel {
         updateContentVisibility()
     }
     
+    func searchTextChanged(_ text: String) {
+        searchText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        updateContentVisibility()
+    }
+    
     // MARK: - Private Methods
+    
+    private func matchesSearchQuery(_ tracker: Tracker) -> Bool {
+        guard !searchText.isEmpty else { return true }
+        return tracker.name.localizedCaseInsensitiveContains(searchText)
+    }
     
     private func matchesSelectedFilter(_ tracker: Tracker) -> Bool {
         switch selectedFilter {

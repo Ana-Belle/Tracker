@@ -32,6 +32,7 @@ final class TrackersViewController: UIViewController {
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.obscuresBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.placeholder = "Поиск"
         searchController.searchBar.searchTextField.backgroundColor = .searchBar
         return searchController
@@ -109,6 +110,7 @@ final class TrackersViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        definesPresentationContext = true
         bindViewModel()
         setElements()
         viewModel.viewDidLoad()
@@ -221,8 +223,14 @@ final class TrackersViewController: UIViewController {
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
         
+        UIBarButtonItem.appearance(
+            whenContainedInInstancesOf: [UISearchBar.self]
+        ).title = "Отменить"
+        
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
         
         view.addSubview(filtersButton)
         
@@ -500,5 +508,17 @@ extension TrackersViewController: TrackerFormViewControllerDelegate {
 extension TrackersViewController: FiltersViewControllerDelegate {
     func filtersViewController(_ viewController: FiltersViewController, didSelectFilter filter: Filters) {
         viewModel.selectFilter(filter)
+    }
+}
+
+extension TrackersViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        viewModel.searchTextChanged(searchController.searchBar.text ?? "")
+    }
+}
+
+extension TrackersViewController: UISearchBarDelegate {
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        viewModel.searchTextChanged("")
     }
 }
