@@ -20,7 +20,7 @@ final class FiltersViewController: UIViewController {
     
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
-        label.text = "Фильтры"
+        label.text = NSLocalizedString("filters", comment: "")
         label.textColor = .blackDay
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label

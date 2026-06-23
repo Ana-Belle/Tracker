@@ -1,0 +1,16 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Anastasia Belyakova on 23.06.2026.
+  
+*/
+
+"trackers" = "Трекеры";
+"filters" = "Фильтры";
+"statistics" = "Статистика";
+"day" = "день";
+"days" = "дней";
+"days2" = "дня";
+"cancel" = "Отменить";
+"search" = "Поиск";

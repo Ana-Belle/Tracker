@@ -13,7 +13,7 @@ final class StatisticsViewController: UIViewController {
     
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
-        label.text = "Статистика"
+        label.text = NSLocalizedString("statistics", comment: "")
         label.textColor = .blackDay
         label.font = .systemFont(ofSize: 34, weight: .bold)
         return label

@@ -145,11 +145,11 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         let remainder100 = count % 100
         
         if  remainder10 == 1 && remainder100 != 11 {
-            return "\(count) день"
+            return "\(count) \(NSLocalizedString("day", comment: ""))"
         } else if remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 10 || remainder100 >= 20) {
-            return "\(count) дня"
+            return "\(count) \(NSLocalizedString("days2", comment: ""))"
         } else {
-            return "\(count) дней"
+            return "\(count) \(NSLocalizedString("days", comment: ""))"
         }
     }
     

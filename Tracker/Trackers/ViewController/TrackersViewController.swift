@@ -25,7 +25,6 @@ final class TrackersViewController: UIViewController {
             .forAutoLayout
         datePicker.preferredDatePickerStyle = .compact
         datePicker.datePickerMode = .date
-        datePicker.locale = Locale(identifier: "ru_Ru")
         datePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
         return datePicker
     }()
@@ -34,7 +33,7 @@ final class TrackersViewController: UIViewController {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.hidesNavigationBarDuringPresentation = false
-        searchController.searchBar.placeholder = "Поиск"
+        searchController.searchBar.placeholder = NSLocalizedString("search", comment: "")
         searchController.searchBar.searchTextField.backgroundColor = .searchBar
         return searchController
     }()
@@ -70,7 +69,7 @@ final class TrackersViewController: UIViewController {
         let button = UIButton(primaryAction: UIAction { [weak self] _ in
             self?.filtersButtonTapped()
         })
-        button.setTitle("Фильтры", for: .normal)
+        button.setTitle(NSLocalizedString("filters", comment: ""), for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         button.backgroundColor = .ypBlue
@@ -222,7 +221,7 @@ final class TrackersViewController: UIViewController {
             navigationItem.rightBarButtonItem?.hidesSharedBackground = true
         }
         
-        navigationItem.title = "Трекеры"
+        navigationItem.title = NSLocalizedString("trackers", comment: "")
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .always
         
@@ -236,8 +235,8 @@ final class TrackersViewController: UIViewController {
         
         UIBarButtonItem.appearance(
             whenContainedInInstancesOf: [UISearchBar.self]
-        ).title = "Отменить"
-        
+        ).title = NSLocalizedString("cancel", comment: "")
+
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         searchController.searchResultsUpdater = self
