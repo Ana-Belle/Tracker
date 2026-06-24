@@ -5,7 +5,6 @@
 //  Created by Anastasia Belyakova on 17.06.2026.
 //
 
-import Foundation
 import UIKit
 
 struct TrackerCellViewModel {
@@ -35,7 +34,7 @@ final class TrackersViewModel {
     private let trackerStore: TrackerStore
     private let recordStore: TrackerRecordStore
     
-    private let analyticsService = AnalyticsService()
+    private let analyticsService = AnalyticsService.shared
     
     private var categories: [TrackerCategory] = []
     private(set) var selectedDate = Date()
@@ -49,7 +48,7 @@ final class TrackersViewModel {
         let today = calendar.startOfDay(for: Date())
         let selectedDay = calendar.startOfDay(for: selectedDate)
         
-        if selectedDay > today {
+        guard selectedDay <= today else {
             return []
         }
         
@@ -139,7 +138,7 @@ final class TrackersViewModel {
     // MARK: - Actions
     
     func plusButtonTapped() {
-        analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "add_track"])
+        analyticsService.report(event: .click, params: [.screen: AnalyticsScreen.main, .item: AnalyticsItem.addTrack])
         onPresentNewTracker?()
     }
     
@@ -221,7 +220,7 @@ final class TrackersViewModel {
     }
     
     func filtersButtonTapped() {
-        analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "filter"])
+        analyticsService.report(event: .click, params: [.screen: AnalyticsScreen.main, .item: AnalyticsItem.filter])
         onPresentFilters?()
     }
     

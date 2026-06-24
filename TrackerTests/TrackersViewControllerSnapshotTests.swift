@@ -1,5 +1,5 @@
 //
-//  ScreenshotTests.swift
+//  TrackersViewControllerSnapshotTests.swift
 //  TrackerTests
 //
 //  Created by Anastasia Belyakova on 23.06.2026.
@@ -9,7 +9,7 @@ import SnapshotTesting
 import XCTest
 @testable import Tracker
 
-final class TrackerTests: XCTestCase {
+final class TrackersViewControllerSnapshotTests: XCTestCase {
     
     func testViewController() {
         let viewModel = TrackersViewModel()
@@ -20,7 +20,7 @@ final class TrackerTests: XCTestCase {
         window.makeKeyAndVisible()
         vc.loadViewIfNeeded()
         
-        assertSnapshots(matching: vc, as: [
+        assertSnapshots(of: vc, as: [
             "light": .image(traits: UITraitCollection(userInterfaceStyle: .light)),
             "dark": .image(traits: UITraitCollection(userInterfaceStyle: .dark))
         ])

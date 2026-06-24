@@ -18,8 +18,8 @@ enum TrackerSection: Int, CaseIterable {
     
     var title: String {
         switch self {
-        case .emoji: return "Emoji"
-        case .color: return "Цвет"
+        case .emoji: "Emoji"
+        case .color: "Цвет"
         }
     }
 }
@@ -82,22 +82,10 @@ final class TrackerFormViewModel {
         if let editingContext {
             selectedCategoryHeader = editingContext.categoryHeader
             selectedWeekDays = editingContext.tracker.schedule
-            selectedEmojiIndex = emojis.firstIndex(of: editingContext.tracker.emoji)
-            selectedColorIndex = Self.index(of: editingContext.tracker.color, in: colors)
+            selectedEmojiIndex = MockData.emojis.firstIndex(of: editingContext.tracker.emoji)
+            selectedColorIndex = Self.index(of: editingContext.tracker.color, in: MockData.colors)
         }
     }
-    
-    let emojis = [
-        "🙂", "😻", "🌺", "🐶", "❤️", "😱",
-        "😇", "😡", "🥶", "🤔", "🙌", "🍔",
-        "🥦", "🏓", "🥇", "🎸", "🏝", "😪"
-    ]
-    
-    let colors: [UIColor] = [
-        .colorSelection1,  .colorSelection2,  .colorSelection3,  .colorSelection4,  .colorSelection5,  .colorSelection6,
-        .colorSelection7,  .colorSelection8,  .colorSelection9,  .colorSelection10, .colorSelection11, .colorSelection12,
-        .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
-    ]
     
     // MARK: - Lifecycle
     
@@ -132,11 +120,11 @@ final class TrackerFormViewModel {
     }
     
     func emoji(at index: Int) -> String {
-        emojis[index]
+        MockData.emojis[index]
     }
     
     func color(at index: Int) -> UIColor {
-        colors[index]
+        MockData.colors[index]
     }
     
     func isEmojiSelected(at index: Int) -> Bool {
@@ -174,8 +162,8 @@ final class TrackerFormViewModel {
         guard let selectedCategoryHeader else { return }
         
         let trackerName = trackerName.isEmpty ? "Новый трекер" : trackerName
-        let color = selectedColorIndex.map { colors[$0] } ?? .colorSelection5
-        let emoji = selectedEmojiIndex.map { emojis[$0] } ?? "🌸"
+        let color = selectedColorIndex.map { MockData.colors[$0] } ?? .colorSelection5
+        let emoji = selectedEmojiIndex.map { MockData.emojis[$0] } ?? "🌸"
         
         if let editingContext {
             let tracker = Tracker(
@@ -243,6 +231,19 @@ final class TrackerFormViewModel {
     
     // MARK: - Private Methods
     
+    private func pluralizeDays(_ count: Int) -> String {
+        let remainder10 = count % 10
+        let remainder100 = count % 100
+        
+        if remainder10 == 1 && remainder100 != 11 {
+            return "\(count) \(NSLocalizedString("day", comment: ""))"
+        } else if remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 10 || remainder100 >= 20) {
+            return "\(count) \(NSLocalizedString("days2", comment: ""))"
+        } else {
+            return "\(count) \(NSLocalizedString("days", comment: ""))"
+        }
+    }
+    
     private func updateCreateButtonState(trackerName: String) {
         let hasCategory = !(selectedCategoryHeader?.isEmpty ?? true)
         let isEnabled = !trackerName.isEmpty
@@ -263,10 +264,7 @@ final class TrackerFormViewModel {
     }
     
     private func formatWeekDays(_ days: [WeekDay]) -> String {
-        if days.count == 7 {
-            return "Каждый день"
-        }
-        return days.map(\.rawValue).joined(separator: ", ")
+        days.count == 7 ? "Каждый день" : days.map(\.rawValue).joined(separator: ", ")
     }
     
     private static func index(of color: UIColor, in colors: [UIColor]) -> Int? {

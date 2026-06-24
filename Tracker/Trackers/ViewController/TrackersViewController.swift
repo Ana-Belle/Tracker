@@ -15,7 +15,7 @@ final class TrackersViewController: UIViewController {
     }
     
     private let viewModel: TrackersViewModel
-    private let analyticsService = AnalyticsService()
+    private let analyticsService = AnalyticsService.shared
     
     private lazy var datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
@@ -116,7 +116,7 @@ final class TrackersViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        analyticsService.report(event: "open", params: ["screen" : "Main"])
+        analyticsService.report(event: .open, params: [.screen: AnalyticsScreen.main])
     }
     
     override func viewDidLayoutSubviews() {
@@ -127,7 +127,7 @@ final class TrackersViewController: UIViewController {
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        analyticsService.report(event: "close", params: ["screen" : "Main"])
+        analyticsService.report(event: .close, params: [.screen: AnalyticsScreen.main])
     }
     
     // MARK: - Actions

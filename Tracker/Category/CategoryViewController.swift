@@ -303,14 +303,9 @@ extension CategoryViewController: UITableViewDelegate {
             corners.formUnion([.layerMinXMaxYCorner, .layerMaxXMaxYCorner])
         }
         
-        if corners.isEmpty {
-            cell.layer.cornerRadius = 0
-            cell.layer.maskedCorners = []
-            cell.layer.masksToBounds = false
-        } else {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = corners
-            cell.layer.masksToBounds = true
-        }
+        let isEmpty: Bool = corners.isEmpty
+        cell.layer.cornerRadius = isEmpty ? 0 : 16
+        cell.layer.maskedCorners = isEmpty ? [] : corners
+        cell.layer.masksToBounds = !isEmpty
     }
 }

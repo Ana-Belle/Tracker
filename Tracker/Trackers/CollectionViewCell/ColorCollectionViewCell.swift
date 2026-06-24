@@ -30,8 +30,6 @@ final class ColorCollectionViewCell: UICollectionViewCell {
         let view = UIView()
         view.layer.cornerRadius = Layout.colorCornerRadius
         view.clipsToBounds = true
-        //view.layer.borderColor = UIColor.whiteDayNight.cgColor
-        //view.layer.borderWidth = 3
         return view
     }().forAutoLayout
     

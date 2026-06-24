@@ -59,8 +59,7 @@ final class TrackerCategoryStore: NSObject {
     
     func updateCategory(oldHeader: String, newHeader: String) throws {
         let trimmedHeader = newHeader.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedHeader.isEmpty else { return }
-        guard trimmedHeader != oldHeader else { return }
+        guard !trimmedHeader.isEmpty && trimmedHeader != oldHeader else { return }
         
         guard let category = fetchCategoryCoreData(forHeader: oldHeader) else {
             throw StoreError.categoryNotFound

@@ -18,7 +18,7 @@ final class CategoryTableViewCell: UITableViewCell {
     }().forAutoLayout
     
     private lazy var checkmarkImageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(systemName: "checkmark"))
+        let imageView = UIImageView(image: SystemImage.checkmark.image)
         imageView.tintColor = .ypBlue
         imageView.contentMode = .scaleAspectFit
         imageView.isHidden = true

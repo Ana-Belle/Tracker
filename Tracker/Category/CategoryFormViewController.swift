@@ -145,8 +145,8 @@ extension CategoryFormViewController: UITextFieldDelegate {
         shouldChangeCharactersIn range: NSRange,
         replacementString string: String
     ) -> Bool {
-        DispatchQueue.main.async { [weak self] in
-            self?.viewModel.textDidChange(textField.text ?? "")
+        DispatchQueue.main.async {
+            self.viewModel.textDidChange(textField.text ?? "")
         }
         return true
     }

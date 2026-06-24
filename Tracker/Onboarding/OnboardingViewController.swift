@@ -128,8 +128,9 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
     }
     
     @objc private func buttonTapped() {
-        UserDefaults.standard.set(true, forKey: "isOnboardingCompleted")
-        
+        let userDefaults = UserDefaultsService.shared
+        userDefaults.isOnboardingCompleted = true
+
         guard let window = view.window else { return }
         
         let tabBarController = TabBarController()

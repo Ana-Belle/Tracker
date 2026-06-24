@@ -9,15 +9,22 @@ import Foundation
 import AppMetricaCore
 
 struct AnalyticsService {
+    static let shared = AnalyticsService()
+
     static func activate() {
-        guard let configuration = AppMetricaConfiguration(apiKey: "1ca56082-c34a-45aa-86c7-a8faf5832061") else { return }
-        
+        guard let configuration = AppMetricaConfiguration(apiKey: Constants.apiKey) else { return }
+
         AppMetrica.activate(with: configuration)
     }
-    
-    func report(event: String, params : [AnyHashable : Any]) {
-        AppMetrica.reportEvent(name: event, parameters: params, onFailure: { error in
-            print("REPORT ERROR: %@", error.localizedDescription)
+
+    func report(event: AnalyticsEvent, params: [AnalyticsKey: any AnalyticsParamConvertible] = [:]) {
+        let parameters = Dictionary(uniqueKeysWithValues: params.map { ($0.key.rawValue, $0.value.analyticsString) })
+        report(event: event.rawValue, parameters: parameters)
+    }
+
+    private func report(event: String, parameters: [AnyHashable: Any]) {
+        AppMetrica.reportEvent(name: event, parameters: parameters, onFailure: { error in
+            TrackerLogger.shared.error("REPORT ERROR: %@ \(error.localizedDescription)")
         })
     }
 }
