@@ -158,7 +158,7 @@ final class CategoryViewController: UIViewController {
     
     private func setElements() {
         view.backgroundColor = .whiteDayNight
-
+        
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),

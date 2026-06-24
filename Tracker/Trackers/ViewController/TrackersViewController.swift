@@ -19,7 +19,7 @@ final class TrackersViewController: UIViewController {
     
     private let viewModel: TrackersViewModel
     private let analyticsService = AnalyticsService()
-
+    
     private lazy var datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
             .forAutoLayout
@@ -110,23 +110,23 @@ final class TrackersViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         definesPresentationContext = true
         bindViewModel()
         setElements()
         viewModel.viewDidLoad()
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         analyticsService.report(event: "open", params: ["screen" : "Main"])
     }
-
+    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         analyticsService.report(event: "close", params: ["screen" : "Main"])
     }
-
+    
     // MARK: - Actions
     
     @objc private func plusButtonTapped() {
@@ -207,7 +207,7 @@ final class TrackersViewController: UIViewController {
     
     private func setElements() {
         view.backgroundColor = .whiteDayNight
-
+        
         let plusButton = UIBarButtonItem(
             image: UIImage(resource: .plusBlack),
             style: .plain,
@@ -237,7 +237,7 @@ final class TrackersViewController: UIViewController {
         UIBarButtonItem.appearance(
             whenContainedInInstancesOf: [UISearchBar.self]
         ).title = NSLocalizedString("cancel", comment: "")
-
+        
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         searchController.searchResultsUpdater = self

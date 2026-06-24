@@ -40,7 +40,7 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         
         pageControl.currentPageIndicatorTintColor = .ypBlack
         pageControl.pageIndicatorTintColor = .ypBlack.withAlphaComponent(0.3)
-
+        
         return pageControl
     }()
     

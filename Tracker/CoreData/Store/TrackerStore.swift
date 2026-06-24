@@ -80,28 +80,28 @@ final class TrackerStore: NSObject {
         guard let trackerEntity = fetchTrackerCoreData(id: tracker.id) else {
             throw StoreError.trackerNotFound
         }
-
+        
         let category = categoryStore.fetchCategoryCoreData(forHeader: header)
         ?? {
             let newCategory = TrackerCategoryCoreData(context: context)
             newCategory.header = header
             return newCategory
         }()
-
+        
         trackerEntity.name = tracker.name
         trackerEntity.emoji = tracker.emoji
         trackerEntity.color = CoreDataValueCodec.encodeColor(tracker.color)
         trackerEntity.schedule = CoreDataValueCodec.encodeSchedule(tracker.schedule)
         trackerEntity.category = category
-
+        
         try saveContext()
     }
-
+    
     func deleteTracker(id: UUID) throws {
         guard let tracker = fetchTrackerCoreData(id: id) else {
             throw StoreError.trackerNotFound
         }
-
+        
         let records = tracker.records as? Set<TrackerRecordCoreData> ?? []
         records.forEach { context.delete($0) }
         context.delete(tracker)

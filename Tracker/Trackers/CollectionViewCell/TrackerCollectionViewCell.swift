@@ -16,9 +16,9 @@ protocol TrackerCellDelegate: AnyObject {
 
 final class TrackerCollectionViewCell: UICollectionViewCell {
     private let analyticsService = AnalyticsService()
-
+    
     private var tracker: Tracker?
-
+    
     private lazy var trackerBackgroundView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 16
@@ -114,7 +114,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         
         contentView.bringSubviewToFront(plusButton)
     }
-
+    
     private func setupContextMenu() {
         let interaction = UIContextMenuInteraction(delegate: self)
         trackerBackgroundView.addInteraction(interaction)
@@ -131,8 +131,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         trackerNameLabel.text = tracker.name
         
-        let wordDay = pluralizeDays(completedDays)
-        daysCountLabel.text = wordDay
+        daysCountLabel.text = pluralizeDays(completedDays)
         
         let image = isCompletedToday ? UIImage(systemName: "checkmark") : UIImage(systemName: "plus")
         plusButton.setImage(image, for: .normal)
@@ -140,22 +139,9 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         plusButton.alpha = isCompletedToday ? 0.3 : 1
     }
     
-    private func pluralizeDays(_ count: Int) -> String {
-        let remainder10 = count % 10
-        let remainder100 = count % 100
-        
-        if  remainder10 == 1 && remainder100 != 11 {
-            return "\(count) \(NSLocalizedString("day", comment: ""))"
-        } else if remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 10 || remainder100 >= 20) {
-            return "\(count) \(NSLocalizedString("days2", comment: ""))"
-        } else {
-            return "\(count) \(NSLocalizedString("days", comment: ""))"
-        }
-    }
-    
     @objc private func plusButtonTapped() {
         analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "track"])
-
+        
         guard let trackerId = trackerId, let indexPath = indexPath else {
             assertionFailure("no trackerId")
             return
@@ -176,18 +162,18 @@ extension TrackerCollectionViewCell: UIContextMenuInteractionDelegate {
         configurationForMenuAtLocation location: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let trackerId = trackerId, let indexPath = indexPath else { return nil }
-
+        
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
             let editAction = UIAction(title: "Редактировать") { [weak self] _ in
                 self?.analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "edit"])
                 self?.delegate?.editTracker(id: trackerId, at: indexPath)
             }
-
+            
             let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
                 self?.analyticsService.report(event: "click", params: ["screen" : "Main", "item" : "delete"])
                 self?.delegate?.requestDeleteTracker(id: trackerId, at: indexPath)
             }
-
+            
             return UIMenu(children: [editAction, deleteAction])
         }
     }

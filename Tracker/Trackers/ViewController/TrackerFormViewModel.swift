@@ -25,7 +25,7 @@ enum TrackerSection: Int, CaseIterable {
 }
 
 final class TrackerFormViewModel {
-
+    
     // MARK: - Bindings
     
     var onCategoryButtonTitleUpdated: ((String) -> Void)?
@@ -41,34 +41,44 @@ final class TrackerFormViewModel {
     // MARK: - Properties
     
     weak var delegate: TrackerFormViewControllerDelegate?
-
+    
     private let editingContext: TrackerEditingContext?
-
+    private let recordStore: TrackerRecordStore
+    
     private(set) var selectedCategoryHeader: String?
-
+    
     private var selectedWeekDays: [WeekDay] = []
     private var selectedEmojiIndex: Int?
     private var selectedColorIndex: Int?
-
+    
     var isEditing: Bool {
         editingContext != nil
     }
-
+    
     var screenTitle: String {
         isEditing ? "Редактирование привычки" : "Новая привычка"
     }
-
+    
     var actionButtonTitle: String {
         isEditing ? "Сохранить" : "Создать"
     }
-
+    
     var initialTrackerName: String? {
         editingContext?.tracker.name
     }
-
-    init(editingContext: TrackerEditingContext? = nil) {
+    
+    var completedDaysText: String? {
+        guard let trackerId = editingContext?.tracker.id else { return nil }
+        return pluralizeDays(recordStore.completedDaysCount(for: trackerId))
+    }
+    
+    init(
+        editingContext: TrackerEditingContext? = nil,
+        recordStore: TrackerRecordStore = TrackerRecordStore()
+    ) {
         self.editingContext = editingContext
-
+        self.recordStore = recordStore
+        
         if let editingContext {
             selectedCategoryHeader = editingContext.categoryHeader
             selectedWeekDays = editingContext.tracker.schedule
@@ -97,13 +107,13 @@ final class TrackerFormViewModel {
         } else {
             onCategoryButtonTitleUpdated?("")
         }
-
+        
         if selectedWeekDays.isEmpty {
             onScheduleButtonTitleUpdated?("")
         } else {
             onScheduleButtonTitleUpdated?(formatWeekDays(selectedWeekDays))
         }
-
+        
         updateCreateButtonState(trackerName: initialTrackerName ?? "")
     }
     
@@ -162,11 +172,11 @@ final class TrackerFormViewModel {
     
     func createButtonTapped(trackerName: String) {
         guard let selectedCategoryHeader else { return }
-
+        
         let trackerName = trackerName.isEmpty ? "Новый трекер" : trackerName
         let color = selectedColorIndex.map { colors[$0] } ?? .colorSelection5
         let emoji = selectedEmojiIndex.map { emojis[$0] } ?? "🌸"
-
+        
         if let editingContext {
             let tracker = Tracker(
                 id: editingContext.tracker.id,
@@ -175,7 +185,7 @@ final class TrackerFormViewModel {
                 emoji: emoji,
                 schedule: selectedWeekDays
             )
-
+            
             delegate?.updateTracker(
                 tracker: tracker,
                 categoryHeader: selectedCategoryHeader,
@@ -189,10 +199,10 @@ final class TrackerFormViewModel {
                 emoji: emoji,
                 schedule: selectedWeekDays
             )
-
+            
             delegate?.addNewTrackerToCategory(tracker: tracker, to: selectedCategoryHeader)
         }
-
+        
         onDismiss?()
     }
     
@@ -258,28 +268,28 @@ final class TrackerFormViewModel {
         }
         return days.map(\.rawValue).joined(separator: ", ")
     }
-
+    
     private static func index(of color: UIColor, in colors: [UIColor]) -> Int? {
         guard let targetComponents = rgbaComponents(from: color) else { return nil }
-
+        
         return colors.firstIndex { candidate in
             guard let candidateComponents = rgbaComponents(from: candidate) else { return false }
             return componentsMatch(targetComponents, candidateComponents)
         }
     }
-
+    
     private static func rgbaComponents(from color: UIColor) -> [CGFloat]? {
         let resolvedColor = color.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
         return CoreDataValueCodec.encodeColor(resolvedColor) as? [CGFloat]
     }
-
+    
     private static func componentsMatch(
         _ lhs: [CGFloat],
         _ rhs: [CGFloat],
         tolerance: CGFloat = 0.01
     ) -> Bool {
         guard lhs.count == 4, rhs.count == 4 else { return false }
-
+        
         return zip(lhs, rhs).allSatisfy { abs($0 - $1) <= tolerance }
     }
 }

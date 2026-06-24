@@ -39,7 +39,7 @@ final class CategoryFormViewController: UIViewController {
             self?.doneButtonTapped()
         })
         button.setTitle("Готово", for: .normal)
-        button.setTitleColor(.ypWhite, for: .normal)
+        button.setTitleColor(.whiteDayNight, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray
         button.layer.cornerRadius = 16

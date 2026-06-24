@@ -14,13 +14,13 @@ protocol TrackerFormViewControllerDelegate: AnyObject {
 }
 
 final class TrackerFormViewController: UIViewController {
-
+    
     weak var delegate: TrackerFormViewControllerDelegate? {
         didSet { viewModel.delegate = delegate }
     }
     
     private let viewModel: TrackerFormViewModel
-
+    
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
@@ -33,6 +33,16 @@ final class TrackerFormViewController: UIViewController {
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
+    
+    private lazy var completedDaysLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .blackDayNight
+        label.font = .systemFont(ofSize: 32, weight: .bold)
+        label.textAlignment = .center
+        return label
+    }().forAutoLayout
+    
+    private var completedDaysLabelHeightConstraint: NSLayoutConstraint?
     
     private lazy var trackerNameField: UITextField = {
         let textField = UITextField()
@@ -72,7 +82,7 @@ final class TrackerFormViewController: UIViewController {
         button.setTitleColor(.blackDayNight, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17)
         button.backgroundColor = .backgroundDayNight
-
+        
         var config = UIButton.Configuration.plain()
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 50)
         button.configuration = config
@@ -141,7 +151,7 @@ final class TrackerFormViewController: UIViewController {
     private lazy var separator: UIView = {
         let container = UIView()
         container.backgroundColor = .backgroundDayNight
-
+        
         let view = UIView().forAutoLayout
         view.backgroundColor = UIColor(white: 0.85, alpha: 1)
         container.addSubview(view)
@@ -219,6 +229,9 @@ final class TrackerFormViewController: UIViewController {
         headerLabel.text = viewModel.screenTitle
         createButton.setTitle(viewModel.actionButtonTitle, for: .normal)
         trackerNameField.text = viewModel.initialTrackerName
+        completedDaysLabel.text = viewModel.completedDaysText
+        completedDaysLabel.isHidden = viewModel.completedDaysText == nil
+        completedDaysLabelHeightConstraint?.constant = viewModel.completedDaysText == nil ? 0 : 38
         viewModel.viewDidLoad()
         emojiColorCollectionView.reloadData()
     }
@@ -276,7 +289,7 @@ final class TrackerFormViewController: UIViewController {
     
     private func setElements() {
         view.backgroundColor = .whiteDayNight
-
+        
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),
@@ -291,19 +304,30 @@ final class TrackerFormViewController: UIViewController {
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
         
+        scrollView.addSubview(completedDaysLabel)
+        let completedDaysHeightConstraint = completedDaysLabel.heightAnchor.constraint(equalToConstant: 0)
+        completedDaysLabelHeightConstraint = completedDaysHeightConstraint
+        
+        NSLayoutConstraint.activate([
+            completedDaysLabel.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            completedDaysLabel.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 16),
+            completedDaysLabel.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -16),
+            completedDaysHeightConstraint
+        ])
+        
         scrollView.addSubview(trackerNameField)
         NSLayoutConstraint.activate([
-            trackerNameField.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 24),
-            trackerNameField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            trackerNameField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            trackerNameField.topAnchor.constraint(equalTo: completedDaysLabel.bottomAnchor, constant: 24),
+            trackerNameField.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 16),
+            trackerNameField.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -16),
             trackerNameField.heightAnchor.constraint(equalToConstant: 75)
         ])
         
         scrollView.addSubview(stackView)
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: trackerNameField.bottomAnchor, constant: 24),
-            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            stackView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 16),
+            stackView.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -16)
         ])
         
         NSLayoutConstraint.activate([

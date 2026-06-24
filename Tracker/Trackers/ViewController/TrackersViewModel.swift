@@ -34,9 +34,9 @@ final class TrackersViewModel {
     private let categoryStore: TrackerCategoryStore
     private let trackerStore: TrackerStore
     private let recordStore: TrackerRecordStore
-
+    
     private let analyticsService = AnalyticsService()
-
+    
     private var categories: [TrackerCategory] = []
     private(set) var selectedDate = Date()
     private(set) var selectedFilter: Filters = .allTrackers
