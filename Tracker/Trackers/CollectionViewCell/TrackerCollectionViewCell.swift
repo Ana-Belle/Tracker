@@ -38,14 +38,14 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     
     private lazy var trackerNameLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .ypWhite
+        label.textColor = .white
         label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }().forAutoLayout
     
     private lazy var daysCountLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }().forAutoLayout
@@ -54,7 +54,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         let button = UIButton()
         let image = UIImage(systemName: "plus")
         button.setImage(image, for: .normal)
-        button.tintColor = .ypWhite
+        button.tintColor = .whiteDayNight
         button.backgroundColor = .colorSelection5
         button.layer.cornerRadius = 34/2
         button.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)

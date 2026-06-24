@@ -34,7 +34,8 @@ final class TrackersViewController: UIViewController {
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.placeholder = NSLocalizedString("search", comment: "")
-        searchController.searchBar.searchTextField.backgroundColor = .searchBar
+        searchController.searchBar.searchTextField.backgroundColor = .backgroundDayNight
+        searchController.searchBar.searchTextField.textColor = .searchText
         return searchController
     }()
     
@@ -42,7 +43,7 @@ final class TrackersViewController: UIViewController {
         let label = UILabel()
             .forAutoLayout
         label.text = "Что будем отслеживать?"
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }()
@@ -59,7 +60,7 @@ final class TrackersViewController: UIViewController {
             frame: .zero,
             collectionViewLayout: UICollectionViewFlowLayout()
         )
-        collectionView.backgroundColor = .whiteDay
+        collectionView.backgroundColor = .whiteDayNight
         collectionView.alwaysBounceVertical = true
         collectionView.register(TrackerCollectionViewCell.self, forCellWithReuseIdentifier: "Cell")
         return collectionView
@@ -88,7 +89,7 @@ final class TrackersViewController: UIViewController {
         let label = UILabel()
             .forAutoLayout
         label.text = "Ничего не найдено"
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }()
@@ -205,15 +206,15 @@ final class TrackersViewController: UIViewController {
     }
     
     private func setElements() {
-        view.backgroundColor = .whiteDay
-        
+        view.backgroundColor = .whiteDayNight
+
         let plusButton = UIBarButtonItem(
             image: UIImage(resource: .plusBlack),
             style: .plain,
             target: self,
             action: #selector(plusButtonTapped)
         )
-        plusButton.tintColor = .blackDay
+        plusButton.tintColor = .blackDayNight
         navigationItem.leftBarButtonItem = plusButton
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: datePicker)
         
@@ -227,7 +228,7 @@ final class TrackersViewController: UIViewController {
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .whiteDay
+        appearance.backgroundColor = .whiteDayNight
         appearance.shadowColor = .clear
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance

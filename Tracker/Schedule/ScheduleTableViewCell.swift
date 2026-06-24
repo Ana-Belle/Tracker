@@ -19,7 +19,7 @@ final class ScheduleTableViewCell: UITableViewCell {
     private lazy var dayLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .regular)
-        label.textColor = .black
+        label.textColor = .blackDayNight
         return label
     }().forAutoLayout
     

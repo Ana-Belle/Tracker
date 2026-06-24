@@ -14,7 +14,7 @@ final class StatisticsViewController: UIViewController {
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = NSLocalizedString("statistics", comment: "")
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 34, weight: .bold)
         return label
     }().forAutoLayout
@@ -46,7 +46,7 @@ final class StatisticsViewController: UIViewController {
         let label = UILabel()
             .forAutoLayout
         label.text = "Анализировать пока нечего"
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }()
@@ -86,7 +86,7 @@ final class StatisticsViewController: UIViewController {
     }
     
     private func setElements() {
-        view.backgroundColor = .whiteDay
+        view.backgroundColor = .whiteDayNight
         
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([

@@ -17,7 +17,7 @@ final class TabBarController: UITabBarController {
     private func configTabBar() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .whiteDay
+        appearance.backgroundColor = .whiteDayNight
         appearance.shadowColor = .separator
         
         tabBar.standardAppearance = appearance

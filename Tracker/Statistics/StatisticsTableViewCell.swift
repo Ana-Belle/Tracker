@@ -21,14 +21,14 @@ final class StatisticsTableViewCell: UITableViewCell {
     
     private lazy var valueLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 34, weight: .bold)
         return label
     }().forAutoLayout
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }().forAutoLayout

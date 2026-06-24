@@ -30,7 +30,7 @@ final class ScheduleViewController: UIViewController {
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = "Расписание"
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
@@ -44,6 +44,8 @@ final class ScheduleViewController: UIViewController {
         tableView.backgroundColor = .clear
         tableView.backgroundView = nil
         tableView.layer.cornerRadius = 16
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.separatorColor = .blackDayNight
         return tableView
     }().forAutoLayout
     
@@ -52,9 +54,9 @@ final class ScheduleViewController: UIViewController {
             self?.doneButtonTapped()
         })
         button.setTitle("Готово", for: .normal)
-        button.setTitleColor(.whiteDay, for: .normal)
+        button.setTitleColor(.whiteDayNight, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        button.backgroundColor = .blackDay
+        button.backgroundColor = .blackDayNight
         button.layer.cornerRadius = 16
         return button
     }().forAutoLayout
@@ -66,7 +68,7 @@ final class ScheduleViewController: UIViewController {
     }
     
     private func setElements() {
-        view.backgroundColor = .whiteDay
+        view.backgroundColor = .whiteDayNight
         
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
@@ -134,8 +136,8 @@ extension ScheduleViewController: UITableViewDataSource {
             delegate: self
         )
         cell.tag = indexPath.row
-        cell.backgroundColor = .backgroundDay
-        
+        cell.backgroundColor = .backgroundDayNight
+
         return cell
     }
 }

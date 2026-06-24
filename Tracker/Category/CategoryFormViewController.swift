@@ -13,7 +13,7 @@ final class CategoryFormViewController: UIViewController {
     
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
@@ -21,9 +21,9 @@ final class CategoryFormViewController: UIViewController {
     private lazy var newCategoryNameField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название категории"
-        textField.textColor = .blackDay
+        textField.textColor = .blackDayNight
         textField.font = UIFont.systemFont(ofSize: 17)
-        textField.backgroundColor = .backgroundDay
+        textField.backgroundColor = .backgroundDayNight
         textField.layer.cornerRadius = 16
         textField.clipsToBounds = true
         
@@ -39,7 +39,7 @@ final class CategoryFormViewController: UIViewController {
             self?.doneButtonTapped()
         })
         button.setTitle("Готово", for: .normal)
-        button.setTitleColor(.whiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray
         button.layer.cornerRadius = 16
@@ -93,7 +93,7 @@ final class CategoryFormViewController: UIViewController {
         
         viewModel.onDoneButtonStateChanged = { [weak self] isEnabled in
             self?.doneButton.isEnabled = isEnabled
-            self?.doneButton.backgroundColor = isEnabled ? .blackDay : .ypGray
+            self?.doneButton.backgroundColor = isEnabled ? .blackDayNight : .ypGray
         }
         
         viewModel.onDismiss = { [weak self] in
@@ -106,7 +106,7 @@ final class CategoryFormViewController: UIViewController {
     }
     
     private func setElements() {
-        view.backgroundColor = .whiteDay
+        view.backgroundColor = .whiteDayNight
         
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([

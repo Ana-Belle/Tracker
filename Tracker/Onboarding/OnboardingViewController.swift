@@ -25,9 +25,9 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
             self?.buttonTapped()
         })
         button.setTitle("Вот это технологии!", for: .normal)
-        button.setTitleColor(.whiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        button.backgroundColor = .blackDay
+        button.backgroundColor = .ypBlack
         button.layer.cornerRadius = 16
         return button
     }().forAutoLayout
@@ -38,9 +38,9 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         pageControl.numberOfPages = pages.count
         pageControl.currentPage = 0
         
-        pageControl.currentPageIndicatorTintColor = .blackDay
-        pageControl.pageIndicatorTintColor = .blackDay.withAlphaComponent(0.3)
-        
+        pageControl.currentPageIndicatorTintColor = .ypBlack
+        pageControl.pageIndicatorTintColor = .ypBlack.withAlphaComponent(0.3)
+
         return pageControl
     }()
     

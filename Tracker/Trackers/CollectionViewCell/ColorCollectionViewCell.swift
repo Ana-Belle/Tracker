@@ -30,8 +30,8 @@ final class ColorCollectionViewCell: UICollectionViewCell {
         let view = UIView()
         view.layer.cornerRadius = Layout.colorCornerRadius
         view.clipsToBounds = true
-        view.layer.borderColor = UIColor.ypWhite.cgColor
-        view.layer.borderWidth = 3
+            //view.layer.borderColor = UIColor.whiteDayNight.cgColor
+        //view.layer.borderWidth = 3
         return view
     }().forAutoLayout
     
@@ -65,6 +65,9 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     
     func configure(with color: UIColor, isSelected: Bool) {
         colorView.backgroundColor = color
+        colorView.layer.borderWidth = isSelected ? 3 : 0
+        //colorView.layer.borderColor = colors.borderColor.cgColor
+        colorView.layer.borderColor = UIColor.whiteDayNight.cgColor
         selectionBorderView.backgroundColor = color.withAlphaComponent(Layout.selectionOpacity)
         selectionBorderView.isHidden = !isSelected
     }

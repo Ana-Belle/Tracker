@@ -14,7 +14,7 @@ final class EmojiColorSectionHeaderView: UICollectionReusableView {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 19, weight: .bold)
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         return label
     }().forAutoLayout
     

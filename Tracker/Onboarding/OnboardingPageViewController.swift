@@ -22,7 +22,7 @@ final class OnboardingPageViewController: UIViewController {
         let label = UILabel()
         label.text = text
         label.font = UIFont.boldSystemFont(ofSize: 32)
-        label.textColor = .blackDay
+        label.textColor = .ypBlack
         label.textAlignment = .center
         label.numberOfLines = 0
         return label

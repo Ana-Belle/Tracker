@@ -20,7 +20,7 @@ final class CategoryViewController: UIViewController {
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = "Категория"
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
@@ -40,6 +40,7 @@ final class CategoryViewController: UIViewController {
         ]
         tableView.clipsToBounds = true
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.separatorColor = .blackDayNight
         return tableView
     }().forAutoLayout
     
@@ -48,9 +49,9 @@ final class CategoryViewController: UIViewController {
             self?.viewModel.addButtonTapped()
         })
         button.setTitle("Добавить категорию", for: .normal)
-        button.setTitleColor(.whiteDay, for: .normal)
+        button.setTitleColor(.whiteDayNight, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        button.backgroundColor = .blackDay
+        button.backgroundColor = .blackDayNight
         button.layer.cornerRadius = 16
         return button
     }().forAutoLayout
@@ -77,7 +78,7 @@ final class CategoryViewController: UIViewController {
             string: "Привычки и события можно\nобъединить по смыслу",
             attributes: [
                 .font: font,
-                .foregroundColor: UIColor.blackDay,
+                .foregroundColor: UIColor.blackDayNight,
                 .paragraphStyle: paragraphStyle,
                 .baselineOffset: (lineHeight - font.lineHeight) / 2
             ]
@@ -156,8 +157,8 @@ final class CategoryViewController: UIViewController {
     }
     
     private func setElements() {
-        view.backgroundColor = .whiteDay
-        
+        view.backgroundColor = .whiteDayNight
+
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),
@@ -245,7 +246,7 @@ extension CategoryViewController: UITableViewDataSource {
         let cellModel = viewModel.cellModel(at: indexPath.row)
         guard let cellModel else { return UITableViewCell() }
         cell.configure(header: cellModel.header, isSelected: cellModel.isSelected)
-        cell.backgroundColor = .backgroundDay
+        cell.backgroundColor = .backgroundDayNight
         
         return cell
     }

@@ -29,7 +29,7 @@ final class TrackerFormViewController: UIViewController {
     
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
@@ -37,9 +37,9 @@ final class TrackerFormViewController: UIViewController {
     private lazy var trackerNameField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название трекера"
-        textField.textColor = .blackDay
+        textField.textColor = .blackDayNight
         textField.font = UIFont.systemFont(ofSize: 17)
-        textField.backgroundColor = .backgroundDay
+        textField.backgroundColor = .backgroundDayNight
         textField.layer.cornerRadius = 16
         textField.clipsToBounds = true
         
@@ -69,10 +69,10 @@ final class TrackerFormViewController: UIViewController {
             self?.viewModel.categoryButtonTapped()
         })
         button.setTitle("Категория", for: .normal)
-        button.setTitleColor(.blackDay, for: .normal)
+        button.setTitleColor(.blackDayNight, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17)
-        button.backgroundColor = .backgroundDay
-        
+        button.backgroundColor = .backgroundDayNight
+
         var config = UIButton.Configuration.plain()
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 50)
         button.configuration = config
@@ -100,9 +100,9 @@ final class TrackerFormViewController: UIViewController {
             self?.viewModel.scheduleButtonTapped()
         })
         button.setTitle("Расписание", for: .normal)
-        button.setTitleColor(.blackDay, for: .normal)
+        button.setTitleColor(.blackDayNight, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17)
-        button.backgroundColor = .backgroundDay
+        button.backgroundColor = .backgroundDayNight
         
         var config = UIButton.Configuration.plain()
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 0)
@@ -140,8 +140,8 @@ final class TrackerFormViewController: UIViewController {
     
     private lazy var separator: UIView = {
         let container = UIView()
-        container.backgroundColor = .backgroundDay
-        
+        container.backgroundColor = .backgroundDayNight
+
         let view = UIView().forAutoLayout
         view.backgroundColor = UIColor(white: 0.85, alpha: 1)
         container.addSubview(view)
@@ -192,7 +192,7 @@ final class TrackerFormViewController: UIViewController {
             self?.createButtonTapped()
         })
         button.setTitle("Создать", for: .normal)
-        button.setTitleColor(.whiteDay, for: .normal)
+        button.setTitleColor(.whiteDayNight, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.backgroundColor = .ypGray
         button.layer.cornerRadius = 16
@@ -241,7 +241,7 @@ final class TrackerFormViewController: UIViewController {
         
         viewModel.onCreateButtonStateChanged = { [weak self] isEnabled in
             self?.createButton.isEnabled = isEnabled
-            self?.createButton.backgroundColor = isEnabled ? .blackDay : .ypGray
+            self?.createButton.backgroundColor = isEnabled ? .blackDayNight : .ypGray
         }
         
         viewModel.onClearTrackerName = { [weak self] in
@@ -275,8 +275,8 @@ final class TrackerFormViewController: UIViewController {
     }
     
     private func setElements() {
-        view.backgroundColor = .whiteDay
-        
+        view.backgroundColor = .whiteDayNight
+
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),
@@ -347,7 +347,7 @@ final class TrackerFormViewController: UIViewController {
         let first = NSAttributedString(
             string: buttonTitle,
             attributes: [
-                .foregroundColor: UIColor.blackDay,
+                .foregroundColor: UIColor.blackDayNight,
                 .font: UIFont.systemFont(ofSize: 17)
             ]
         )

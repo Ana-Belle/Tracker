@@ -40,7 +40,7 @@ final class GradientBorderView: UIView {
         gradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
         layer.addSublayer(gradientLayer)
         
-        contentView.backgroundColor = .whiteDay
+        contentView.backgroundColor = .whiteDayNight
         contentView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(contentView)
         

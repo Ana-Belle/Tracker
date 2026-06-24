@@ -21,7 +21,7 @@ final class FiltersViewController: UIViewController {
     private lazy var headerLabel: UILabel = {
         let label = UILabel()
         label.text = NSLocalizedString("filters", comment: "")
-        label.textColor = .blackDay
+        label.textColor = .blackDayNight
         label.font = .systemFont(ofSize: 16, weight: .medium)
         return label
     }().forAutoLayout
@@ -37,6 +37,7 @@ final class FiltersViewController: UIViewController {
         tableView.layer.cornerRadius = 16
         tableView.clipsToBounds = true
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.separatorColor = .blackDayNight
         tableView.isScrollEnabled = false
         return tableView
     }().forAutoLayout
@@ -57,8 +58,8 @@ final class FiltersViewController: UIViewController {
     }
     
     private func setElements() {
-        view.backgroundColor = .whiteDay
-        
+        view.backgroundColor = .whiteDayNight
+
         view.addSubview(headerLabel)
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 39),
@@ -92,7 +93,7 @@ extension FiltersViewController: UITableViewDataSource {
         
         let filter = filters[indexPath.row]
         cell.configure(header: filter.rawValue, isSelected: filter == selectedFilter)
-        cell.backgroundColor = .backgroundDay
+        cell.backgroundColor = .backgroundDayNight
         
         return cell
     }
