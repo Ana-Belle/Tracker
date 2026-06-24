@@ -11,10 +11,7 @@ final class TrackersViewController: UIViewController {
     
     private enum Layout {
         static let filtersButtonHeight: CGFloat = 50
-        static let filtersButtonBottomInset: CGFloat = 50
-        static var filtersButtonOverlayInset: CGFloat {
-            filtersButtonHeight + filtersButtonBottomInset
-        }
+        static let filtersButtonBottomMargin: CGFloat = 16
     }
     
     private let viewModel: TrackersViewModel
@@ -120,6 +117,12 @@ final class TrackersViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         analyticsService.report(event: "open", params: ["screen" : "Main"])
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard trackerCollectionView.superview != nil else { return }
+        updateCollectionViewContentInset(showFiltersButton: !filtersButton.isHidden)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -257,7 +260,7 @@ final class TrackersViewController: UIViewController {
         view.addSubview(trackerCollectionView)
         NSLayoutConstraint.activate([
             trackerCollectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 200),
-            trackerCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 84),
+            trackerCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             trackerCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             trackerCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
@@ -273,10 +276,18 @@ final class TrackersViewController: UIViewController {
         trackerCollectionView.delegate = self
         
         view.bringSubviewToFront(filtersButton)
+        updateCollectionViewContentInset(showFiltersButton: !filtersButton.isHidden)
     }
     
     private func updateCollectionViewContentInset(showFiltersButton: Bool) {
-        let bottomInset = showFiltersButton ? Layout.filtersButtonOverlayInset : 0
+        let bottomInset: CGFloat
+        if showFiltersButton {
+            bottomInset = Layout.filtersButtonHeight
+            + Layout.filtersButtonBottomMargin
+            + view.safeAreaInsets.bottom
+        } else {
+            bottomInset = 0
+        }
         trackerCollectionView.contentInset.bottom = bottomInset
         trackerCollectionView.verticalScrollIndicatorInsets.bottom = bottomInset
     }

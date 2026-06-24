@@ -10,4 +10,13 @@ enum Filters: String, CaseIterable {
     case trackersForToday = "Трекеры на сегодня"
     case completed = "Завершенные"
     case notCompleted = "Не завершенные"
+    
+    var showsSelectionCheckmark: Bool {
+        switch self {
+        case .allTrackers, .trackersForToday:
+            false
+        case .completed, .notCompleted:
+            true
+        }
+    }
 }

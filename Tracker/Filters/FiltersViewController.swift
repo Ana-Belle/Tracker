@@ -92,7 +92,10 @@ extension FiltersViewController: UITableViewDataSource {
         }
         
         let filter = filters[indexPath.row]
-        cell.configure(header: filter.rawValue, isSelected: filter == selectedFilter)
+        cell.configure(
+            header: filter.rawValue,
+            isSelected: filter == selectedFilter && filter.showsSelectionCheckmark
+        )
         cell.backgroundColor = .backgroundDayNight
         
         return cell
